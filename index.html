@@ -1,0 +1,1781 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>المواقع المفضلة</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            direction: rtl;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .top-section {
+            flex-shrink: 0;
+        }
+        .bookmarks-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .bookmarks-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+            margin-right: -10px;
+        }
+        .bookmarks-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .bookmarks-container::-webkit-scrollbar-track {
+            background: #34495e;
+            border-radius: 4px;
+        }
+        .bookmarks-container::-webkit-scrollbar-thumb {
+            background: #2980b9;
+            border-radius: 4px;
+        }
+        .bookmarks-container::-webkit-scrollbar-thumb:hover {
+            background: #3498db;
+        }
+        iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            background-color: #fff;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .bookmark-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #34495e;
+            position: relative;
+            flex-wrap: wrap;
+            gap: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .bookmark-item.playing {
+            background-color: rgba(46, 204, 113, 0.1);
+            border-right: 4px solid #2ecc71;
+        }
+        .bookmark-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 5px 0;
+        }
+        .bookmark-actions {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-right: auto;
+            flex-wrap: wrap;
+        }
+        .bookmark-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .bookmark-sequence {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 12px;
+        }
+        .bookmark-link {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex: 1;
+            min-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .bookmark-stats {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 10px;
+        }
+        .bookmark-favicon {
+            width: 16px;
+            height: 16px;
+            margin-left: 5px;
+        }
+        .bookmark-item a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 16px;
+            flex-grow: 1;
+        }
+        .bookmark-item a:hover {
+            color: #5dade2;
+            text-decoration: underline;
+        }
+        .delete-button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+        .external-button {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+        }
+        .external-button:hover {
+            background-color: #d68910;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            border-top: 1px solid #34495e;
+            color: #7f8c8d;
+            font-size: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+        .footer span {
+            color: #3498db;
+            font-weight: bold;
+        }
+        #addBookmarkForm {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            background: #34495e;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #bookmarkUrl {
+            flex: 1;
+            padding: 12px 15px;
+            font-size: 16px;
+            border: 2px solid #3498db;
+            border-radius: 6px;
+            background-color: #2c3e50;
+            color: #fff;
+            min-width: 300px;
+            transition: all 0.3s ease;
+        }
+        #bookmarkUrl:focus {
+            border-color: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+            outline: none;
+        }
+        #bookmarkUrl::placeholder {
+            color: #95a5a6;
+            font-size: 16px;
+        }
+        #addBookmarkForm button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #addBookmarkForm button:hover {
+            background-color: #27ae60;
+        }
+        .add-bookmark-form {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .form-group {
+            flex-grow: 1;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 14px;
+        }
+        .add-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .add-button:hover {
+            background-color: #2980b9;
+        }
+        .playback-panel {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .playback-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-group label {
+            color: #888;
+            font-size: 14px;
+        }
+        .control-group input[type="number"] {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .play-button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            min-width: 100px;
+        }
+        .play-button:hover {
+            background-color: #219a52;
+        }
+        .play-button.playing {
+            background-color: #e74c3c;
+        }
+        .play-button.playing:hover {
+            background-color: #c0392b;
+        }
+        .status-text {
+            color: #888;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .countdown {
+            font-size: 16px;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        #playbackStatus {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            color: #95a5a6;
+        }
+        .iframe-error {
+            display: none;
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            background: #2c3e50;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .bookmark-time {
+            color: #2ecc71;
+            font-size: 12px;
+            background: #2c3e50;
+            padding: 2px 8px;
+            border-radius: 10px;
+            min-width: 50px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .bookmark-views {
+            color: #888;
+            font-size: 12px;
+            background: #2c3e50;
+            padding: 2px 8px;
+            border-radius: 10px;
+            min-width: 50px;
+            text-align: center;
+        }
+        .bookmark-play-button {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            min-width: 60px;
+        }
+        .bookmark-play-button:hover {
+            background-color: #219a52;
+        }
+        .bookmark-play-button.playing {
+            background-color: #e74c3c;
+        }
+        .bookmark-play-button.playing:hover {
+            background-color: #c0392b;
+        }
+        .bookmark-controls input[type="number"] {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 12px;
+        }
+        .bookmark-controls label {
+            color: #888;
+            font-size: 12px;
+        }
+        .bookmark-timer {
+            color: #888;
+            font-size: 12px;
+            min-width: 80px;
+        }
+        .bookmark-edit-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+        .bookmark-edit-button:hover {
+            background-color: #2980b9;
+        }
+        .bookmark-edit-panel {
+            display: none;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #2c3e50;
+            border-radius: 4px;
+        }
+        .bookmark-edit-panel.active {
+            display: block;
+        }
+        .bookmark-edit-panel input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .bookmark-edit-panel button {
+            margin-right: 10px;
+        }
+        .duplicate-message {
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #34495e;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .goto-button {
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .goto-button:hover {
+            background-color: #d68910;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .bookmark-item.highlight {
+            animation: highlightBookmark 2s ease;
+        }
+        @keyframes highlightBookmark {
+            0% {
+                background-color: rgba(243, 156, 18, 0.3);
+                box-shadow: 0 0 10px rgba(243, 156, 18, 0.3);
+            }
+            100% {
+                background-color: transparent;
+                box-shadow: none;
+            }
+        }
+        .bookmark-exclude {
+            background-color: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+        }
+        .bookmark-exclude.excluded {
+            background-color: #e74c3c;
+        }
+        .bookmark-exclude:hover {
+            opacity: 0.9;
+        }
+        .bookmark-item.excluded {
+            opacity: 0.7;
+        }
+        .playback-controls { flex-wrap: wrap; }
+        select.unit-select {
+            padding: 4px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+            font-size: 12px;
+        }
+        .playback-controls select.unit-select { font-size: 14px; padding: 5px; }
+        .bookmark-controls input.link-interval { width: 70px; }
+        .preset-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .preset-row > span { color: #888; font-size: 14px; }
+        .preset-btn {
+            background: #34495e;
+            color: #ecf0f1;
+            border: 1px solid #3498db;
+            border-radius: 14px;
+            padding: 4px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .preset-btn:hover { background: #3498db; }
+        .random-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #2c3e50;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+        .random-row input[type="number"] {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: #fff;
+        }
+        .random-row > span { color: #888; }
+        .hint-text { color: #7f8c8d; font-size: 12px; margin-bottom: 10px; }
+        body {
+            height: auto;
+            min-height: 100vh;
+            overflow-y: auto;
+            display: block;
+        }
+        .container { height: auto; min-height: calc(100vh - 40px); }
+        .bookmarks-section { flex: none; }
+        .bookmarks-container { flex: none; max-height: 55vh; min-height: 120px; }
+        iframe { height: 45vh; min-height: 260px; }
+        .duplicate-message:empty { display: none; }
+        .external-button { display: inline-block; }
+        .auto-external {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: #f39c12;
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .auto-external input { cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-section">
+            <iframe name="playbackFrame" src="about:blank" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <div id="iframeError" style="display: none; background-color: #e74c3c; color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                إذا لم يظهر الموقع في الإطار فقد يمنع عرضه داخل صفحات أخرى، استخدم زر "فتح في نافذة خارجية" بجانب الرابط.
+            </div>
+            
+            <div id="addBookmarkForm">
+                <input type="text" id="bookmarkUrl" placeholder="أدخل رابط الموقع الذي تريد إضافته">
+                <button onclick="addBookmark()">إضافة رابط</button>
+                <div id="duplicateMessage" class="duplicate-message"></div>
+            </div>
+
+            <div class="playback-panel">
+                <div class="playback-controls">
+                    <label>
+                        الفاصل الزمني الافتراضي:
+                        <input type="number" id="intervalSeconds" value="10" min="1">
+                        <select id="intervalUnit" class="unit-select">
+                            <option value="s">ثانية</option>
+                            <option value="m">دقيقة</option>
+                            <option value="h">ساعة</option>
+                        </select>
+                    </label>
+                    <label>
+                        عدد مرات التكرار:
+                        <input type="number" id="repeatCount" value="0" min="0">
+                    </label>
+                    <button id="playbackButton" onclick="togglePlayback()">تشغيل الكل</button>
+                </div>
+                <div class="preset-row">
+                    <span>فترات سريعة:</span>
+                    <button class="preset-btn" onclick="applyPreset(10,'s')">10 ثواني</button>
+                    <button class="preset-btn" onclick="applyPreset(30,'s')">30 ثانية</button>
+                    <button class="preset-btn" onclick="applyPreset(1,'m')">دقيقة</button>
+                    <button class="preset-btn" onclick="applyPreset(5,'m')">5 دقائق</button>
+                    <button class="preset-btn" onclick="applyPreset(15,'m')">15 دقيقة</button>
+                    <button class="preset-btn" onclick="applyPreset(30,'m')">30 دقيقة</button>
+                    <button class="preset-btn" onclick="applyPreset(1,'h')">ساعة</button>
+                </div>
+                <div class="random-row">
+                    <label>
+                        <input type="checkbox" id="randomMode">
+                        فترة عشوائية (يُختار أحد الخيارات الخمسة في كل دورة):
+                    </label>
+                    <input type="number" class="random-opt" value="45" min="1">
+                    <input type="number" class="random-opt" value="48" min="1">
+                    <input type="number" class="random-opt" value="52" min="1">
+                    <input type="number" class="random-opt" value="56" min="1">
+                    <input type="number" class="random-opt" value="60" min="1">
+                    <span>ثانية</span>
+                </div>
+                <div class="hint-text">يمكنك تحديد فترة مختلفة لكل رابط من خانة «الفترة» بجانبه. إذا تُركت فارغة يُستخدم الوضع العشوائي (إن كان مفعّلاً) وإلا الفاصل الافتراضي.</div>
+                <div id="playbackStatus"></div>
+            </div>
+        </div>
+
+        <div class="bookmarks-section">
+            <div class="bookmarks-container">
+                <ul id="bookmarkList"></ul>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            تم التطوير بواسطة <span>abdmohsen</span>
+        </footer>
+    </div>
+
+    <script>
+        let playbackInterval = null;
+        let currentIndex = 0;
+        let currentIteration = 0;
+        let startTime = 0;
+        let remainingTime = 0;
+        let playbackWindow = null;
+        let countdownInterval = null;
+        let remainingSeconds = 0;
+        let playbackActive = false;
+        let isLoading = false;
+        let countdownEnd = 0;
+        const UNIT_SECONDS = { s: 1, m: 60, h: 3600 };
+
+        let frameLoadToken = 0;
+
+        // YouTube watch pages refuse to be framed; the embed form works and autoplays
+        function toEmbedUrl(url) {
+            try {
+                const u = new URL(url);
+                const host = u.hostname.replace(/^(www|m)\./, '');
+                let id = null;
+                if (host === 'youtu.be') {
+                    id = u.pathname.split('/')[1];
+                } else if (host === 'youtube.com') {
+                    const parts = u.pathname.split('/');
+                    if (u.pathname === '/watch') id = u.searchParams.get('v');
+                    else if (['shorts', 'live', 'embed'].includes(parts[1])) id = parts[2];
+                }
+                if (id) return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
+            } catch (e) {}
+            return url;
+        }
+
+        // Blank first, then load, so the same URL is really reloaded (video restarts)
+        function loadInFrame(url) {
+            const iframe = document.querySelector('iframe[name="playbackFrame"]');
+            const token = ++frameLoadToken;
+            iframe.src = 'about:blank';
+            setTimeout(() => {
+                if (token === frameLoadToken) iframe.src = toEmbedUrl(url);
+            }, 150);
+        }
+
+        const EXT_FEATURES = ''; // empty features => opens as a normal browser tab
+
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.textContent = msg;
+            t.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e74c3c;color:#fff;padding:10px 20px;border-radius:4px;z-index:1000;max-width:90%;text-align:center;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 4000);
+        }
+
+        function hideReopenBanner() {
+            const b = document.getElementById('reopenBanner');
+            if (b) b.style.display = 'none';
+        }
+
+        // Shown when the browser refuses to open the window from a timer
+        function showReopenBanner(url) {
+            let b = document.getElementById('reopenBanner');
+            if (!b) {
+                b = document.createElement('div');
+                b.id = 'reopenBanner';
+                b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2000;background:#e67e22;color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:center;gap:15px;flex-wrap:wrap;font-size:15px;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+                const msg = document.createElement('span');
+                msg.textContent = 'انتهى الوقت لكن المتصفح لا يسمح بفتح النافذة تلقائياً.';
+                const btn = document.createElement('button');
+                btn.textContent = 'افتح النافذة الآن';
+                btn.style.cssText = 'background:#fff;color:#d35400;border:none;padding:8px 18px;border-radius:4px;font-size:15px;font-weight:bold;cursor:pointer;';
+                b.appendChild(msg);
+                b.appendChild(btn);
+                document.body.appendChild(b);
+            }
+            b.querySelector('button').onclick = function() {
+                loadInExternal(url);
+            };
+            b.style.display = 'flex';
+        }
+
+        // ONE external tab that stays on http://localhost:8080/player (served by server.ps1).
+        // The tab never navigates away, so the browser can't detach it: every new link
+        // is sent to it with postMessage and it swaps the video inside itself.
+        const PLAYER_ORIGIN = 'http://localhost:8080';
+        const PLAYER_URL = PLAYER_ORIGIN + '/player';
+        let playerReady = false;
+        let pendingPlayerUrl = null;
+
+        // Is start.bat's server running? Checked in the background so the tab is only
+        // opened on the player page when it will actually load.
+        let serverUp = false;
+        let serverWarned = false;
+        function probeServer() {
+            try {
+                fetch(PLAYER_ORIGIN + '/player', { mode: 'no-cors', cache: 'no-store' })
+                    .then(() => { serverUp = true; })
+                    .catch(() => { serverUp = false; });
+            } catch (e) { serverUp = false; }
+        }
+        probeServer();
+        setInterval(probeServer, 4000);
+
+        window.addEventListener('message', function(e) {
+            if (!e.data || e.data.type !== 'player-ready') return;
+            if (!playbackWindow || e.source !== playbackWindow) return;
+            playerReady = true;
+            if (pendingPlayerUrl) {
+                try { playbackWindow.postMessage({ type: 'load', url: pendingPlayerUrl }, PLAYER_ORIGIN); } catch (err) {}
+                pendingPlayerUrl = null;
+            }
+        });
+
+        function loadInPlayer(url) {
+            try {
+                if (playbackWindow && !playbackWindow.closed) {
+                    if (playerReady) {
+                        // Next link: open a fresh tab, then close the old one (no pile-up).
+                        // If the browser blocks the new tab, keep the old one and reuse it instead.
+                        const oldWin = playbackWindow;
+                        const freshWin = window.open(PLAYER_URL, 'playerTab' + Date.now(), EXT_FEATURES);
+                        if (freshWin) {
+                            playerReady = false;
+                            pendingPlayerUrl = url;
+                            playbackWindow = freshWin;
+                            try { oldWin.close(); } catch (e) {}
+                        } else {
+                            oldWin.postMessage({ type: 'load', url: url }, PLAYER_ORIGIN);
+                        }
+                    } else {
+                        pendingPlayerUrl = url;
+                        playbackWindow.location.href = PLAYER_URL;
+                    }
+                } else {
+                    playerReady = false;
+                    pendingPlayerUrl = url;
+                    playbackWindow = window.open(PLAYER_URL, 'singlePlaybackWindow', EXT_FEATURES);
+                    if (!playbackWindow) {
+                        showReopenBanner(url);
+                        return true;
+                    }
+                }
+                hideReopenBanner();
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        // Opens (or reuses) the external window and navigates it to the URL
+        function loadInExternal(url) {
+            // YouTube: same single tab, video swapped inside the player page (needs start.bat running)
+            if (toEmbedUrl(url) !== url) {
+                if (serverUp && loadInPlayer(url)) return;
+                if (!serverUp && !serverWarned) {
+                    serverWarned = true;
+                    showToast('خادم start.bat غير شغّال، لذلك فُتح الرابط مباشرة. شغّل start.bat لتبقى نافذة واحدة.');
+                }
+            }
+
+            let navigated = false;
+            if (playbackWindow && !playbackWindow.closed) {
+                try {
+                    playbackWindow.location.href = url;
+                    playerReady = false;
+                    navigated = true;
+                } catch (e) {}
+            }
+            if (!navigated) {
+                if (playbackWindow) { try { playbackWindow.close(); } catch (e) {} }
+                playbackWindow = window.open(url, 'singlePlaybackWindow', EXT_FEATURES);
+                if (!playbackWindow) {
+                    showReopenBanner(url);
+                    return;
+                }
+            }
+            hideReopenBanner();
+            try { playbackWindow.focus(); } catch (e) {}
+        }
+
+        // Uses the external window if the link's checkbox is ticked, otherwise the iframe
+        function openLink(url, item) {
+            const isYouTube = toEmbedUrl(url) !== url;
+            const localFile = location.protocol === 'file:';
+            if (item.querySelector('.link-external').checked || (isYouTube && localFile)) {
+                loadInExternal(url);
+            } else {
+                loadInFrame(url);
+            }
+        }
+
+        function toSeconds(value, unit) {
+            const v = parseFloat(value);
+            if (isNaN(v) || v <= 0) return 0;
+            return Math.max(1, Math.round(v * (UNIT_SECONDS[unit] || 1)));
+        }
+
+        function getGlobalSeconds() {
+            return toSeconds(
+                document.getElementById('intervalSeconds').value,
+                document.getElementById('intervalUnit').value
+            ) || 10;
+        }
+
+        // Per-link duration; falls back to the default interval when empty
+        function getItemSeconds(item) {
+            const own = toSeconds(
+                item.querySelector('.link-interval').value,
+                item.querySelector('.link-unit').value
+            );
+            if (own) return own;
+            if (document.getElementById('randomMode').checked) {
+                const r = pickRandomSeconds();
+                if (r) return r;
+            }
+            return getGlobalSeconds();
+        }
+
+        // Picks one of the five user-defined options at random
+        function pickRandomSeconds() {
+            const opts = Array.from(document.querySelectorAll('.random-opt'))
+                .map(i => Math.round(parseFloat(i.value)))
+                .filter(v => !isNaN(v) && v > 0);
+            if (opts.length === 0) return 0;
+            return opts[Math.floor(Math.random() * opts.length)];
+        }
+
+        function formatTime(total) {
+            total = Math.max(0, Math.round(total));
+            const h = Math.floor(total / 3600);
+            const m = Math.floor((total % 3600) / 60);
+            const s = total % 60;
+            if (h > 0) return `${h}س ${m}د ${s}ث`;
+            if (m > 0) return `${m}د ${s}ث`;
+            return `${s}ث`;
+        }
+
+        function saveSettings() {
+            try {
+                localStorage.setItem('playSettings', JSON.stringify({
+                    interval: document.getElementById('intervalSeconds').value,
+                    unit: document.getElementById('intervalUnit').value,
+                    repeat: document.getElementById('repeatCount').value,
+                    random: document.getElementById('randomMode').checked,
+                    randomOpts: Array.from(document.querySelectorAll('.random-opt')).map(i => i.value)
+                }));
+            } catch (e) {}
+        }
+
+        function loadSettings() {
+            try {
+                const s = JSON.parse(localStorage.getItem('playSettings') || 'null');
+                if (!s) return;
+                document.getElementById('intervalSeconds').value = s.interval || 10;
+                document.getElementById('intervalUnit').value = s.unit || 's';
+                document.getElementById('repeatCount').value = s.repeat || 0;
+                document.getElementById('randomMode').checked = !!s.random;
+                if (Array.isArray(s.randomOpts)) {
+                    document.querySelectorAll('.random-opt').forEach((input, i) => {
+                        if (s.randomOpts[i]) input.value = s.randomOpts[i];
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function applyPreset(value, unit) {
+            document.getElementById('intervalSeconds').value = value;
+            document.getElementById('intervalUnit').value = unit;
+            saveSettings();
+        }
+
+        // Load bookmarks from localStorage when page loads
+        document.addEventListener('DOMContentLoaded', loadBookmarks);
+
+        function loadBookmarks() {
+            loadSettings();
+            const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+            const bookmarkList = document.getElementById('bookmarkList');
+            bookmarkList.innerHTML = '';
+            
+            isLoading = true; // prevent partial saves while the list is being rebuilt
+            bookmarks.forEach((bookmark, index) => {
+                const li = addBookmarkToList(bookmark.url, index + 1, bookmark.views, bookmark);
+                if (bookmark.excluded) {
+                    toggleExclude(li);
+                }
+            });
+            isLoading = false;
+        }
+
+        function saveBookmarks() {
+            if (isLoading) return;
+            const bookmarks = [];
+            document.querySelectorAll('.bookmark-item').forEach(item => {
+                const url = item.getAttribute('data-url');
+                const viewsSpan = item.querySelector('.bookmark-views');
+                bookmarks.push({ 
+                    url: url,
+                    views: parseInt(viewsSpan.getAttribute('data-views')) || 0,
+                    excluded: item.classList.contains('excluded'),
+                    interval: item.querySelector('.link-interval').value,
+                    unit: item.querySelector('.link-unit').value,
+                    repeat: item.querySelector('.link-repeat').value,
+                    external: item.querySelector('.link-external').checked,
+                    time: Math.round(parseFloat((item.querySelector('.bookmark-time') || {getAttribute: () => 0}).getAttribute('data-time')) || 0)
+                });
+            });
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        }
+
+        function incrementViews(url) {
+            const bookmarkItems = document.querySelectorAll('.bookmark-item');
+            bookmarkItems.forEach(item => {
+                const a = item.querySelector('a');
+                if (a.href === url) {
+                    const viewsSpan = item.querySelector('.bookmark-views');
+                    const currentViews = parseInt(viewsSpan.getAttribute('data-views')) || 0;
+                    const newViews = currentViews + 1;
+                    viewsSpan.setAttribute('data-views', newViews);
+                    viewsSpan.textContent = `${newViews} مشاهدة`;
+                    saveBookmarks();
+                }
+            });
+        }
+
+        function addBookmarkToList(url, number, views = 0, settings = {}) {
+            const bookmarkList = document.getElementById('bookmarkList');
+            const li = document.createElement('li');
+            li.className = 'bookmark-item';
+            li.setAttribute('data-url', url);
+            
+            // Add exclude button
+            const excludeButton = document.createElement('button');
+            excludeButton.className = 'bookmark-exclude';
+            excludeButton.textContent = 'تشغيل تلقائي';
+            excludeButton.onclick = function() {
+                toggleExclude(li);
+            };
+            li.appendChild(excludeButton);
+
+            // Bookmark info section (sequence and link)
+            const bookmarkInfo = document.createElement('div');
+            bookmarkInfo.className = 'bookmark-info';
+            
+            // Add sequence input
+            const sequenceInput = document.createElement('input');
+            sequenceInput.type = 'number';
+            sequenceInput.className = 'bookmark-sequence';
+            sequenceInput.value = number;
+            sequenceInput.min = 1;
+            sequenceInput.onchange = function() {
+                const newPosition = parseInt(this.value);
+                if (isNaN(newPosition) || newPosition < 1) {
+                    this.value = number;
+                    showSequenceCorrection(number);
+                    return;
+                }
+                reorderBookmarks(li, newPosition);
+            };
+            bookmarkInfo.appendChild(sequenceInput);
+            
+            // Add number span (hidden but kept for compatibility)
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'bookmark-number';
+            numberSpan.style.display = 'none';
+            numberSpan.textContent = number + '.';
+            bookmarkInfo.appendChild(numberSpan);
+            
+            // Link container
+            const linkContainer = document.createElement('div');
+            linkContainer.className = 'bookmark-link';
+            
+            // Add favicon
+            const favicon = document.createElement('img');
+            favicon.className = 'bookmark-favicon';
+            favicon.src = `https://www.google.com/s2/favicons?domain=${url}`;
+            favicon.onerror = () => {
+                favicon.style.display = 'none';
+            };
+            linkContainer.appendChild(favicon);
+            
+            // Add link
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = 'playbackFrame';
+            a.onclick = function(e) {
+                e.preventDefault();
+                loadInFrame(url);
+                incrementViews(url);
+            };
+            const urlObj = new URL(url);
+            a.textContent = urlObj.hostname;
+            linkContainer.appendChild(a);
+            
+            bookmarkInfo.appendChild(linkContainer);
+            li.appendChild(bookmarkInfo);
+            
+            // Stats section (views)
+            const statsContainer = document.createElement('div');
+            statsContainer.className = 'bookmark-stats';
+            
+            // Add views counter
+            const viewsSpan = document.createElement('span');
+            viewsSpan.className = 'bookmark-views';
+            viewsSpan.setAttribute('data-views', views);
+            viewsSpan.textContent = `${views} مشاهدة`;
+            statsContainer.appendChild(viewsSpan);
+
+            // Total time spent inside this link (counts while it is the one playing)
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'bookmark-time';
+            timeSpan.title = 'إجمالي الوقت الذي قضيته داخل هذا الرابط';
+            timeSpan.setAttribute('data-time', settings.time || 0);
+            timeSpan.textContent = '⏱ ' + formatTime(settings.time || 0);
+            statsContainer.appendChild(timeSpan);
+            
+            li.appendChild(statsContainer);
+
+            // Controls section
+            const controls = document.createElement('div');
+            controls.className = 'bookmark-controls';
+            
+            // Per-link duration (empty = use the default interval)
+            const intervalLabel = document.createElement('label');
+            intervalLabel.textContent = 'الفترة:';
+            controls.appendChild(intervalLabel);
+            
+            const restartIfPlaying = function() {
+                saveBookmarks();
+                if (li.getAttribute('data-playing') === 'true') {
+                    stopSinglePlayback(li);
+                    startSinglePlayback(li);
+                }
+            };
+            
+            const intervalInput = document.createElement('input');
+            intervalInput.type = 'number';
+            intervalInput.className = 'link-interval';
+            intervalInput.min = '1';
+            intervalInput.placeholder = 'افتراضي';
+            intervalInput.value = settings.interval || '';
+            intervalInput.onchange = restartIfPlaying;
+            controls.appendChild(intervalInput);
+            
+            const unitSelect = document.createElement('select');
+            unitSelect.className = 'unit-select link-unit';
+            [['s', 'ثانية'], ['m', 'دقيقة'], ['h', 'ساعة']].forEach(([val, text]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = text;
+                unitSelect.appendChild(opt);
+            });
+            unitSelect.value = settings.unit || 's';
+            unitSelect.onchange = restartIfPlaying;
+            controls.appendChild(unitSelect);
+            
+            // Repeat count input
+            const repeatLabel = document.createElement('label');
+            repeatLabel.textContent = 'تكرار:';
+            controls.appendChild(repeatLabel);
+            
+            const repeatInput = document.createElement('input');
+            repeatInput.type = 'number';
+            repeatInput.className = 'link-repeat';
+            repeatInput.value = settings.repeat || '0';
+            repeatInput.min = '0';
+            repeatInput.onchange = restartIfPlaying;
+            controls.appendChild(repeatInput);
+            
+            // Timer display
+            const timer = document.createElement('span');
+            timer.className = 'bookmark-timer';
+            controls.appendChild(timer);
+            
+            // Play button
+            const playButton = document.createElement('button');
+            playButton.className = 'bookmark-play-button';
+            playButton.textContent = 'تشغيل';
+            playButton.onclick = function() {
+                if (li.getAttribute('data-playing') === 'true') {
+                    stopSinglePlayback(li);
+                } else {
+                    if (playbackActive) stopPlayback();
+                    stopAllPlayback();
+                    startSinglePlayback(li);
+                }
+            };
+            controls.appendChild(playButton);
+            
+            li.appendChild(controls);
+            
+            // Actions section (edit, external, delete buttons)
+            const actions = document.createElement('div');
+            actions.className = 'bookmark-actions';
+            
+            // Add edit button
+            const editButton = document.createElement('button');
+            editButton.className = 'bookmark-edit-button';
+            editButton.textContent = 'تحرير';
+            editButton.onclick = function() {
+                showEditPanel(li, url);
+            };
+            actions.appendChild(editButton);
+            
+            // Auto external window checkbox
+            const extLabel = document.createElement('label');
+            extLabel.className = 'auto-external';
+            extLabel.title = 'عند التشغيل يُفتح الرابط في نافذة خارجية بدلاً من الإطار';
+            const extCheck = document.createElement('input');
+            extCheck.type = 'checkbox';
+            extCheck.className = 'link-external';
+            extCheck.checked = !!settings.external;
+            extCheck.onchange = restartIfPlaying;
+            extLabel.appendChild(extCheck);
+            extLabel.appendChild(document.createTextNode(' نافذة خارجية تلقائياً'));
+            actions.appendChild(extLabel);
+            
+            // Add external button
+            const externalButton = document.createElement('button');
+            externalButton.className = 'external-button';
+            externalButton.textContent = 'فتح في نافذة خارجية';
+            externalButton.onclick = function() {
+                window.open(url, '_blank');
+                incrementViews(url);
+            };
+            actions.appendChild(externalButton);
+            
+            // Add delete button
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-button';
+            deleteButton.textContent = '×';
+            deleteButton.onclick = function() {
+                stopSinglePlayback(li);
+                li.remove();
+                renumberBookmarks();
+                saveBookmarks();
+            };
+            actions.appendChild(deleteButton);
+            
+            li.appendChild(actions);
+            
+            // Add edit panel (hidden by default)
+            const editPanel = document.createElement('div');
+            editPanel.className = 'bookmark-edit-panel';
+            editPanel.style.width = '100%';
+            editPanel.innerHTML = `
+                <input type="text" class="edit-url" value="${url}" placeholder="أدخل الرابط الجديد">
+                <button onclick="saveEdit(this.parentElement.parentElement)">حفظ</button>
+                <button onclick="cancelEdit(this.parentElement.parentElement)">إلغاء</button>
+            `;
+            li.appendChild(editPanel);
+            
+            bookmarkList.appendChild(li);
+            return li;
+        }
+
+        function renumberBookmarks() {
+            document.querySelectorAll('.bookmark-number').forEach((span, index) => {
+                span.textContent = (index + 1) + '.';
+            });
+        }
+
+        function checkIframeAccess() {
+            const iframe = document.querySelector('iframe[name="playbackFrame"]');
+            const errorDiv = document.getElementById('iframeError');
+            const currentUrl = iframe.src;
+            
+            try {
+                // Try to access iframe content
+                setTimeout(() => {
+                    try {
+                        if (iframe.contentWindow.location.href) {
+                            errorDiv.style.display = 'none';
+                            document.querySelectorAll('.external-button').forEach(btn => {
+                                if (btn.parentElement.querySelector('a').href === currentUrl) {
+                                    btn.style.display = 'none';
+                                }
+                            });
+                        }
+                    } catch (e) {
+                        // Show error message and external button
+                        errorDiv.style.display = 'block';
+                        document.querySelectorAll('.external-button').forEach(btn => {
+                            if (btn.parentElement.querySelector('a').href === currentUrl) {
+                                btn.style.display = 'block';
+                            }
+                        });
+                    }
+                }, 1000);
+            } catch (e) {
+                // Show error message and external button
+                errorDiv.style.display = 'block';
+                document.querySelectorAll('.external-button').forEach(btn => {
+                    if (btn.parentElement.querySelector('a').href === currentUrl) {
+                        btn.style.display = 'block';
+                    }
+                });
+            }
+        }
+
+        function addBookmark() {
+            const urlInput = document.getElementById('bookmarkUrl');
+            const url = urlInput.value.trim();
+            const duplicateMessage = document.getElementById('duplicateMessage');
+            
+            if (!url) {
+                alert('الرجاء إدخال رابط صحيح');
+                return;
+            }
+
+            try {
+                new URL(url); // Validate URL format
+            } catch (e) {
+                alert('الرجاء إدخال رابط صحيح');
+                return;
+            }
+
+            // Check for duplicate
+            const existingBookmark = findExistingBookmark(url);
+            if (existingBookmark) {
+                showDuplicateMessage(url);
+                return;
+            }
+
+            const bookmarkList = document.getElementById('bookmarkList');
+            const nextNumber = bookmarkList.children.length + 1;
+            
+            addBookmarkToList(url, nextNumber);
+            urlInput.value = '';
+            saveBookmarks();
+        }
+
+        function findExistingBookmark(url) {
+            const bookmarks = document.querySelectorAll('.bookmark-item');
+            for (const bookmark of bookmarks) {
+                const bookmarkUrl = bookmark.getAttribute('data-url');
+                if (normalizeUrl(bookmarkUrl) === normalizeUrl(url)) {
+                    return bookmark;
+                }
+            }
+            return null;
+        }
+
+        function normalizeUrl(url) {
+            try {
+                const urlObj = new URL(url);
+                // Remove trailing slash and normalize protocol
+                return urlObj.origin + urlObj.pathname.replace(/\/$/, '') + urlObj.search;
+            } catch (e) {
+                return url;
+            }
+        }
+
+        function showDuplicateMessage(url) {
+            const duplicateMessage = document.getElementById('duplicateMessage');
+            const bookmarkItems = document.querySelectorAll('.bookmark-item');
+            let duplicateItem = null;
+            
+            // Find the duplicate bookmark
+            bookmarkItems.forEach(item => {
+                if (item.getAttribute('data-url') === url) {
+                    duplicateItem = item;
+                }
+            });
+            
+            if (duplicateItem) {
+                duplicateMessage.innerHTML = `
+                    <div class="duplicate-message">
+                        هذا الرابط موجود بالفعل!
+                        <button class="goto-button" onclick="scrollToBookmark('${url}')">الذهاب إلى الرابط</button>
+                    </div>
+                `;
+            }
+        }
+
+        function scrollToBookmark(url) {
+            const bookmarkItems = document.querySelectorAll('.bookmark-item');
+            bookmarkItems.forEach(item => {
+                if (item.getAttribute('data-url') === url) {
+                    // Remove highlight class from all items
+                    bookmarkItems.forEach(i => i.classList.remove('highlight'));
+                    
+                    // Add highlight to the target item
+                    item.classList.add('highlight');
+                    
+                    // Scroll to the item
+                    item.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                    // Remove highlight class after animation
+                    setTimeout(() => {
+                        item.classList.remove('highlight');
+                    }, 2000);
+                }
+            });
+            
+            // Clear the duplicate message
+            setTimeout(() => {
+                document.getElementById('duplicateMessage').innerHTML = '';
+            }, 3000);
+        }
+
+        function updateStatus() {
+            const statusText = document.getElementById('playbackStatus');
+            const repeatCount = parseInt(document.getElementById('repeatCount').value);
+            const totalBookmarks = Array.from(document.querySelectorAll('.bookmark-item'))
+                .filter(item => !item.classList.contains('excluded')).length;
+            
+            if (playbackActive) {
+                const currentBookmarkIndex = Array.from(document.querySelectorAll('.bookmark-item'))
+                    .filter(item => !item.classList.contains('excluded'))
+                    .indexOf(document.querySelector('.bookmark-item.playing')) + 1;
+                
+                let status = `الرابط ${currentBookmarkIndex} من ${totalBookmarks}`;
+                if (repeatCount > 0) {
+                    status += ` | التكرار ${currentIteration + 1}/${repeatCount}`;
+                }
+                
+                // Create status span if it doesn't exist
+                if (!statusText.querySelector('.status-text')) {
+                    const statusSpan = document.createElement('span');
+                    statusSpan.className = 'status-text';
+                    statusText.appendChild(statusSpan);
+                }
+                
+                statusText.querySelector('.status-text').textContent = status;
+            } else {
+                statusText.textContent = '';
+            }
+        }
+
+        function toggleExclude(bookmarkItem) {
+            const excludeButton = bookmarkItem.querySelector('.bookmark-exclude');
+            if (bookmarkItem.classList.toggle('excluded')) {
+                excludeButton.textContent = 'متوقف';
+                excludeButton.classList.add('excluded');
+            } else {
+                excludeButton.textContent = 'تشغيل تلقائي';
+                excludeButton.classList.remove('excluded');
+            }
+            saveBookmarks();
+        }
+
+        function playNext() {
+            const all = Array.from(document.querySelectorAll('.bookmark-item'));
+            const repeatCount = parseInt(document.getElementById('repeatCount').value) || 0;
+            
+            if (!all.some(item => !item.classList.contains('excluded'))) {
+                stopPlayback();
+                alert('لا توجد روابط متاحة للتشغيل');
+                return;
+            }
+
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+
+            all.forEach(item => item.classList.remove('playing'));
+
+            // Find next non-excluded bookmark (wrapping around and counting rounds)
+            while (!all[currentIndex] || all[currentIndex].classList.contains('excluded')) {
+                currentIndex++;
+                if (currentIndex >= all.length) {
+                    currentIndex = 0;
+                    currentIteration++;
+                    if (repeatCount > 0 && currentIteration >= repeatCount) {
+                        stopPlayback();
+                        return;
+                    }
+                }
+            }
+
+            const currentItem = all[currentIndex];
+            currentItem.classList.add('playing');
+            currentItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            const currentUrl = currentItem.getAttribute('data-url');
+            
+            openLink(currentUrl, currentItem);
+            incrementViews(currentItem.querySelector('a').href);
+
+            // Each link has its own duration
+            const seconds = getItemSeconds(currentItem);
+            countdownEnd = Date.now() + seconds * 1000;
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 500);
+
+            updateStatus();
+
+            // Move to next bookmark
+            currentIndex++;
+        }
+
+        function updateCountdown() {
+            const statusText = document.getElementById('playbackStatus');
+            if (!statusText.querySelector('.countdown')) {
+                const countdownSpan = document.createElement('span');
+                countdownSpan.className = 'countdown';
+                statusText.insertBefore(countdownSpan, statusText.firstChild);
+            }
+            
+            remainingSeconds = Math.max(0, Math.ceil((countdownEnd - Date.now()) / 1000));
+            statusText.querySelector('.countdown').textContent = formatTime(remainingSeconds);
+            
+            if (remainingSeconds <= 0) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+                playNext();
+            }
+        }
+
+        function stopPlayback() {
+            const playbackButton = document.getElementById('playbackButton');
+            const statusText = document.getElementById('playbackStatus');
+            
+            document.querySelectorAll('.bookmark-item').forEach(item => {
+                item.classList.remove('playing');
+            });
+            
+            clearInterval(countdownInterval);
+            
+            playbackActive = false;
+            hideReopenBanner();
+            countdownInterval = null;
+            currentIndex = 0;
+            currentIteration = 0;
+            remainingSeconds = 0;
+            
+            playbackButton.textContent = 'تشغيل الكل';
+            playbackButton.classList.remove('playing');
+            statusText.textContent = '';
+
+            if (playbackWindow && !playbackWindow.closed) {
+                playbackWindow.close();
+                playbackWindow = null;
+            }
+        }
+
+        function togglePlayback() {
+            if (playbackActive) {
+                stopPlayback();
+            } else {
+                startPlayback();
+            }
+        }
+
+        function startPlayback() {
+            const playbackButton = document.getElementById('playbackButton');
+            
+            stopAllPlayback();
+            currentIndex = 0;
+            currentIteration = 0;
+            playbackActive = true;
+            
+            // Open the external window right now (inside the click) if any link needs it
+            const playable = Array.from(document.querySelectorAll('.bookmark-item'))
+                .filter(item => !item.classList.contains('excluded'));
+            const needsExternal = playable.length > 0
+                && !playable[0].querySelector('.link-external').checked
+                && playable.some(item => item.querySelector('.link-external').checked);
+            if (needsExternal && (!playbackWindow || playbackWindow.closed)) {
+                playbackWindow = window.open('about:blank', 'singlePlaybackWindow', EXT_FEATURES);
+                if (!playbackWindow) {
+                    showToast('المتصفح منع فتح النافذة الخارجية. اسمح بالنوافذ المنبثقة لهذه الصفحة.');
+                }
+            }
+            
+            playbackButton.textContent = 'إيقاف';
+            playbackButton.classList.add('playing');
+            
+            playNext();
+        }
+
+        function startSinglePlayback(bookmarkItem) {
+            const url = bookmarkItem.querySelector('a').href;
+            const repeatInput = bookmarkItem.querySelector('.link-repeat');
+            const playButton = bookmarkItem.querySelector('.bookmark-play-button');
+            const timer = bookmarkItem.querySelector('.bookmark-timer');
+            
+            let currentIteration = 0;
+            let intervalSeconds = getItemSeconds(bookmarkItem);
+            const repeatCount = parseInt(repeatInput.value) || 0;
+            let externalWindow = null;
+            
+            // Unique id so an old timer loop can never keep running after a restart
+            const runId = {};
+            bookmarkItem._runId = runId;
+            
+            bookmarkItem.setAttribute('data-playing', 'true');
+            playButton.textContent = 'إيقاف';
+            playButton.classList.add('playing');
+            
+            openLink(url, bookmarkItem);
+            incrementViews(url);
+            
+            let endTime = Date.now() + intervalSeconds * 1000;
+            
+            function updateTimer() {
+                if (bookmarkItem._runId !== runId || bookmarkItem.getAttribute('data-playing') !== 'true') {
+                    if (externalWindow) {
+                        externalWindow.close();
+                    }
+                    return;
+                }
+                
+                let timeLeft = Math.ceil((endTime - Date.now()) / 1000);
+                
+                if (timeLeft <= 0) {
+                    currentIteration++;
+                    if (repeatCount > 0 && currentIteration >= repeatCount) {
+                        if (externalWindow) {
+                            externalWindow.close();
+                        }
+                        stopSinglePlayback(bookmarkItem);
+                        return;
+                    }
+                    
+                    // Reset timer and reload URL
+                    intervalSeconds = getItemSeconds(bookmarkItem);
+                    endTime = Date.now() + intervalSeconds * 1000;
+                    timeLeft = intervalSeconds;
+                    openLink(url, bookmarkItem);
+                    incrementViews(url);
+                }
+                
+                let status = formatTime(timeLeft);
+                if (repeatCount > 0) {
+                    status += ` | ${currentIteration + 1}/${repeatCount}`;
+                }
+                timer.textContent = status;
+                
+                setTimeout(updateTimer, 500);
+            }
+            
+            updateTimer();
+        }
+
+        function stopSinglePlayback(bookmarkItem) {
+            const playButton = bookmarkItem.querySelector('.bookmark-play-button');
+            const timer = bookmarkItem.querySelector('.bookmark-timer');
+            const wasPlaying = bookmarkItem.getAttribute('data-playing') === 'true';
+            
+            bookmarkItem._runId = null;
+            hideReopenBanner();
+            bookmarkItem.setAttribute('data-playing', 'false');
+            playButton.textContent = 'تشغيل';
+            playButton.classList.remove('playing');
+            timer.textContent = '';
+
+            if (!wasPlaying) return;
+
+            // Close the external window if one is open
+            if (playbackWindow && !playbackWindow.closed) {
+                playbackWindow.close();
+            }
+            playbackWindow = null;
+        }
+
+        function stopAllPlayback() {
+            document.querySelectorAll('.bookmark-item').forEach(item => {
+                if (item.getAttribute('data-playing') === 'true') {
+                    stopSinglePlayback(item);
+                }
+            });
+        }
+
+        function showEditPanel(bookmarkItem, currentUrl) {
+            // Hide all other edit panels
+            document.querySelectorAll('.bookmark-edit-panel.active').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            
+            const editPanel = bookmarkItem.querySelector('.bookmark-edit-panel');
+            const urlInput = editPanel.querySelector('.edit-url');
+            urlInput.value = currentUrl;
+            editPanel.classList.add('active');
+        }
+
+        function saveEdit(bookmarkItem) {
+            const editPanel = bookmarkItem.querySelector('.bookmark-edit-panel');
+            const newUrl = editPanel.querySelector('.edit-url').value.trim();
+            
+            if (!newUrl) {
+                alert('الرجاء إدخال رابط صحيح');
+                return;
+            }
+
+            try {
+                new URL(newUrl); // Validate URL format
+            } catch (e) {
+                alert('الرجاء إدخال رابط صحيح');
+                return;
+            }
+
+            // Update bookmark URL
+            bookmarkItem.setAttribute('data-url', newUrl);
+            const link = bookmarkItem.querySelector('a');
+            link.href = newUrl;
+            const urlObj = new URL(newUrl);
+            link.textContent = urlObj.hostname;
+
+            // Update favicon
+            const favicon = bookmarkItem.querySelector('.bookmark-favicon');
+            favicon.src = `https://www.google.com/s2/favicons?domain=${newUrl}`;
+
+            // Hide edit panel
+            editPanel.classList.remove('active');
+
+            // Save changes
+            saveBookmarks();
+        }
+
+        function cancelEdit(bookmarkItem) {
+            const editPanel = bookmarkItem.querySelector('.bookmark-edit-panel');
+            editPanel.classList.remove('active');
+        }
+
+        function reorderBookmarks(bookmarkItem, newPosition) {
+            const bookmarkList = document.getElementById('bookmarkList');
+            const items = Array.from(bookmarkList.children);
+            const totalItems = items.length;
+            const currentIndex = items.indexOf(bookmarkItem);
+            
+            // Validate and correct new position
+            newPosition = Math.max(1, Math.min(newPosition, totalItems));
+            
+            // Get the current sequence numbers
+            const sequences = items.map(item => parseInt(item.querySelector('.bookmark-sequence').value));
+            
+            // If trying to move to the same position, just correct the number if needed
+            if (newPosition === currentIndex + 1) {
+                if (sequences[currentIndex] !== newPosition) {
+                    const sequenceInput = bookmarkItem.querySelector('.bookmark-sequence');
+                    sequenceInput.value = newPosition;
+                    showSequenceCorrection(newPosition);
+                }
+                return;
+            }
+            
+            // Remove the item from its current position
+            bookmarkList.removeChild(bookmarkItem);
+            
+            // Insert at new position
+            const targetIndex = newPosition - 1;
+            if (targetIndex === 0) {
+                bookmarkList.insertBefore(bookmarkItem, bookmarkList.firstChild);
+            } else {
+                const itemBefore = bookmarkList.children[targetIndex - 1];
+                bookmarkList.insertBefore(bookmarkItem, itemBefore.nextSibling);
+            }
+            
+            // Update all sequence numbers
+            updateSequenceNumbers();
+            
+            // Show correction message if the input number was invalid
+            const actualPosition = Array.from(bookmarkList.children).indexOf(bookmarkItem) + 1;
+            if (actualPosition !== parseInt(bookmarkItem.querySelector('.bookmark-sequence').value)) {
+                showSequenceCorrection(actualPosition);
+            }
+            
+            // Save the new order
+            saveBookmarks();
+        }
+
+        function showSequenceCorrection(correctNumber) {
+            const message = document.createElement('div');
+            message.style.position = 'fixed';
+            message.style.top = '20px';
+            message.style.left = '50%';
+            message.style.transform = 'translateX(-50%)';
+            message.style.backgroundColor = '#f39c12';
+            message.style.color = 'white';
+            message.style.padding = '10px 20px';
+            message.style.borderRadius = '4px';
+            message.style.zIndex = '1000';
+            message.textContent = `تم تصحيح الرقم إلى ${correctNumber}`;
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                message.style.opacity = '0';
+                message.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => document.body.removeChild(message), 500);
+            }, 2000);
+        }
+
+        function updateSequenceNumbers() {
+            const items = document.querySelectorAll('.bookmark-item');
+            items.forEach((item, index) => {
+                const sequenceInput = item.querySelector('.bookmark-sequence');
+                const numberSpan = item.querySelector('.bookmark-number');
+                const number = index + 1;
+                
+                // Only update if the number is different
+                if (parseInt(sequenceInput.value) !== number) {
+                    sequenceInput.value = number;
+                    numberSpan.textContent = number + '.';
+                }
+            });
+        }
+
+        // Add keyboard shortcut for adding bookmarks
+        document.getElementById('bookmarkUrl').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addBookmark();
+            }
+        });
+
+        // Allow interval and repeat count to be changed during playback
+        // (a change applies from the next link onwards)
+        ['intervalSeconds', 'intervalUnit', 'repeatCount'].forEach(id => {
+            document.getElementById(id).addEventListener('change', saveSettings);
+        });
+        document.getElementById('randomMode').addEventListener('change', saveSettings);
+        document.querySelectorAll('.random-opt').forEach(i => i.addEventListener('change', saveSettings));
+
+        // Accumulate the time spent in whichever link is currently playing
+        let lastTimeTick = Date.now();
+        let unsavedTime = 0;
+        setInterval(function() {
+            const now = Date.now();
+            const delta = Math.min((now - lastTimeTick) / 1000, 120);
+            lastTimeTick = now;
+            const active = document.querySelector('.bookmark-item.playing, .bookmark-item[data-playing="true"]');
+            if (!active) return;
+            const span = active.querySelector('.bookmark-time');
+            if (!span) return;
+            const total = (parseFloat(span.getAttribute('data-time')) || 0) + delta;
+            span.setAttribute('data-time', total);
+            span.textContent = '⏱ ' + formatTime(total);
+            unsavedTime += delta;
+            if (unsavedTime >= 10) { unsavedTime = 0; saveBookmarks(); }
+        }, 1000);
+        window.addEventListener('pagehide', function() { saveBookmarks(); });
+
+        // Close playback window when the page is unloaded
+        window.addEventListener('unload', function() {
+            if (playbackWindow && !playbackWindow.closed) {
+                playbackWindow.close();
+            }
+        });
+
+        function openExternalWindow(url) {
+            // Close existing playback window if it exists
+            if (playbackWindow && !playbackWindow.closed) {
+                playbackWindow.close();
+            }
+            
+            // Open new window
+            playbackWindow = window.open(url, 'singlePlaybackWindow', 
+                'width=1024,height=768,menubar=no,toolbar=no,location=yes,status=no');
+            
+            if (playbackWindow) {
+                playbackWindow.focus();
+            }
+        }
+    </script>
+</body>
+</html>
