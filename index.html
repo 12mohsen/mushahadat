@@ -327,6 +327,13 @@
             border-radius: 4px;
             margin-top: 10px;
         }
+        .sync-panel { margin-top: 12px; color: #ccc; font-size: 13px; }
+        .sync-panel summary { cursor: pointer; padding: 6px 0; }
+        .sync-panel .sync-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; align-items: center; }
+        .sync-panel input { padding: 6px 8px; border: 1px solid #444; border-radius: 4px; background: #1f2a36; color: #eee; min-width: 200px; flex: 1; }
+        .sync-panel button { padding: 6px 12px; border: 0; border-radius: 4px; background: #3498db; color: #fff; cursor: pointer; }
+        .sync-panel button.off { background: #7f8c8d; }
+        #syncState { margin-inline-start: 8px; font-size: 12px; }
         .bookmark-postpone {
             display: inline-flex;
             align-items: center;
@@ -614,6 +621,18 @@
                 </div>
                 <div class="hint-text">يمكنك تحديد فترة مختلفة لكل رابط من خانة «الفترة» بجانبه. إذا تُركت فارغة يُستخدم الوضع العشوائي (إن كان مفعّلاً) وإلا الفاصل الافتراضي.</div>
                 <div id="playbackStatus"></div>
+                <details class="sync-panel" id="syncPanel">
+                    <summary>☁️ المزامنة (Supabase)<span id="syncState">غير مفعّلة</span></summary>
+                    <div class="sync-row">
+                        <input type="password" id="sbKey" placeholder="مفتاح Supabase (anon / publishable)" autocomplete="off">
+                        <input type="text" id="sbCode" placeholder="رمز المزامنة السرّي (8 أحرف على الأقل)" autocomplete="off">
+                    </div>
+                    <div class="sync-row">
+                        <button type="button" id="sbSave">حفظ وتفعيل</button>
+                        <button type="button" id="sbNow">مزامنة الآن</button>
+                        <button type="button" id="sbOff" class="off">إيقاف</button>
+                    </div>
+                </details>
             </div>
         </div>
 
@@ -1806,6 +1825,157 @@
 
         // Re-check postponed links every minute (a link comes back automatically on its date)
         setInterval(refreshPostponed, 60000);
+
+        // ===== Supabase sync (bookmarks + settings), last-write-wins =====
+        const SB_URL = 'https://euukvepdgexdlhbkimel.supabase.co';
+        const SB_KEYS = ['bookmarks', 'playSettings'];
+        const sbOrigSet = Storage.prototype.setItem;
+        let sbDirtyAt = parseInt(localStorage.getItem('sb_dirty_at')) || 0;
+        let sbPushTimer = null;
+        let sbBusy = false;
+        let sbApplying = false;
+
+        function sbCfg() {
+            return { key: localStorage.getItem('sb_key') || '', code: localStorage.getItem('sb_code') || '' };
+        }
+        function sbReady() {
+            const c = sbCfg();
+            return !!c.key && c.code.length >= 8;
+        }
+        function sbStatus(msg, color) {
+            const el = document.getElementById('syncState');
+            if (el) { el.textContent = msg; el.style.color = color || '#aaa'; }
+        }
+        function sbTime() {
+            const d = new Date();
+            return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+        }
+
+        async function sbRpc(fn, body) {
+            const c = sbCfg();
+            const headers = { 'apikey': c.key, 'Content-Type': 'application/json' };
+            if (c.key.startsWith('eyJ')) headers['Authorization'] = 'Bearer ' + c.key; // legacy JWT anon key
+            const r = await fetch(SB_URL + '/rest/v1/rpc/' + fn, {
+                method: 'POST', headers: headers, body: JSON.stringify(body), keepalive: true
+            });
+            if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 140));
+            return r.json();
+        }
+
+        // Any change to the synced keys marks the local copy dirty and schedules an upload
+        Storage.prototype.setItem = function(k, v) {
+            const prev = (this === localStorage) ? localStorage.getItem(k) : null;
+            sbOrigSet.call(this, k, v);
+            if (prev === String(v)) return; // nothing actually changed
+            if (this === localStorage && SB_KEYS.indexOf(k) !== -1 && !sbApplying) {
+                sbDirtyAt = Date.now();
+                sbOrigSet.call(localStorage, 'sb_dirty_at', String(sbDirtyAt));
+                if (sbReady()) {
+                    clearTimeout(sbPushTimer);
+                    sbPushTimer = setTimeout(() => { sbPush().catch(sbFail); }, 2000);
+                }
+            }
+        };
+
+        function sbFail(e) { sbStatus('⚠️ ' + (e && e.message ? e.message : e), '#e74c3c'); }
+
+        async function sbPush() {
+            if (!sbReady() || sbBusy) return;
+            sbBusy = true;
+            try {
+                const data = {};
+                SB_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) data[k] = v; });
+                const startedDirty = sbDirtyAt;
+                const ts = await sbRpc('set_state', { p_code: sbCfg().code, p_data: data });
+                sbOrigSet.call(localStorage, 'sb_synced_at', String(Date.parse(ts)));
+                if (sbDirtyAt === startedDirty) {
+                    sbDirtyAt = 0;
+                    localStorage.removeItem('sb_dirty_at');
+                }
+                sbStatus('✅ تمت المزامنة ' + sbTime(), '#2ecc71');
+            } finally {
+                sbBusy = false;
+            }
+        }
+
+        function sbApply(row) {
+            sbApplying = true;
+            try {
+                const d = row.data || {};
+                SB_KEYS.forEach(k => { if (typeof d[k] === 'string') sbOrigSet.call(localStorage, k, d[k]); });
+                sbOrigSet.call(localStorage, 'sb_synced_at', String(Date.parse(row.updated_at)));
+                sbDirtyAt = 0;
+                localStorage.removeItem('sb_dirty_at');
+                loadBookmarks();
+            } finally {
+                sbApplying = false;
+            }
+            sbStatus('✅ حُمّلت من السحابة ' + sbTime(), '#2ecc71');
+        }
+
+        async function sbPull() {
+            if (!sbReady() || sbBusy) return;
+            const rows = await sbRpc('get_state', { p_code: sbCfg().code });
+            if (!rows.length) { await sbPush(); return; } // first device: upload what we have
+            const row = rows[0];
+            const remoteT = Date.parse(row.updated_at);
+            const syncedAt = parseInt(localStorage.getItem('sb_synced_at')) || 0;
+            if (remoteT > syncedAt) {
+                const hasLocal = (JSON.parse(localStorage.getItem('bookmarks') || '[]')).length > 0;
+                if (syncedAt === 0 && hasLocal) {
+                    // first connection of a device that already has links
+                    if (!confirm('توجد بيانات محفوظة في السحابة.\nموافق = تحميلها واستبدال بيانات هذا الجهاز.\nإلغاء = رفع بيانات هذا الجهاز بدلاً منها.')) {
+                        await sbPush();
+                        return;
+                    }
+                    sbApply(row);
+                } else if (sbDirtyAt && sbDirtyAt > remoteT) {
+                    await sbPush(); // our local edit is newer
+                } else if (!playbackActive) {
+                    sbApply(row);
+                }
+            } else if (sbDirtyAt) {
+                await sbPush();
+            } else {
+                sbStatus('✅ محدّث ' + sbTime(), '#2ecc71');
+            }
+        }
+
+        function sbSyncNow() {
+            if (!sbReady()) { sbStatus('غير مفعّلة'); return Promise.resolve(); }
+            return sbPull().catch(sbFail);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const keyEl = document.getElementById('sbKey');
+            const codeEl = document.getElementById('sbCode');
+            keyEl.value = localStorage.getItem('sb_key') || '';
+            codeEl.value = localStorage.getItem('sb_code') || '';
+            document.getElementById('sbSave').addEventListener('click', function() {
+                const key = keyEl.value.trim(), code = codeEl.value.trim();
+                if (!key || code.length < 8) { sbStatus('⚠️ أدخل المفتاح ورمزاً من 8 أحرف على الأقل', '#e74c3c'); return; }
+                localStorage.setItem('sb_key', key);
+                localStorage.setItem('sb_code', code);
+                sbStatus('جارٍ المزامنة...');
+                sbSyncNow();
+            });
+            document.getElementById('sbNow').addEventListener('click', function() {
+                sbStatus('جارٍ المزامنة...');
+                sbSyncNow();
+            });
+            document.getElementById('sbOff').addEventListener('click', function() {
+                localStorage.removeItem('sb_key');
+                localStorage.removeItem('sb_code');
+                localStorage.removeItem('sb_synced_at');
+                keyEl.value = ''; codeEl.value = '';
+                sbStatus('غير مفعّلة');
+            });
+            if (sbReady()) { sbStatus('جارٍ المزامنة...'); setTimeout(sbSyncNow, 1200); }
+            setInterval(sbSyncNow, 45000);
+        });
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden' && sbDirtyAt && sbReady()) sbPush().catch(() => {});
+        });
 
         // Close playback window when the page is unloaded
         window.addEventListener('unload', function() {
