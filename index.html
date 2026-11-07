@@ -1886,14 +1886,14 @@
         // Re-check postponed links every minute (a link comes back automatically on its date)
         setInterval(refreshPostponed, 60000);
 
-        // ===== Supabase sync (bookmarks + settings), last-write-wins =====
+        // ===== Supabase sync: per-link merge (never overwrites the whole list) =====
         const SB_URL = 'https://euukvepdgexdlhbkimel.supabase.co';
-        const SB_KEYS = ['bookmarks', 'playSettings'];
         const sbOrigSet = Storage.prototype.setItem;
-        let sbDirtyAt = parseInt(localStorage.getItem('sb_dirty_at')) || 0;
         let sbPushTimer = null;
         let sbBusy = false;
+        let sbAgain = false;
         let sbApplying = false;
+        let sbLastPayload = '';
 
         function sbCfg() {
             return { key: localStorage.getItem('sb_key') || '', code: localStorage.getItem('sb_code') || '' };
@@ -1910,6 +1910,7 @@
             const d = new Date();
             return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
         }
+        function sbFail(e) { sbStatus('⚠️ ' + (e && e.message ? e.message : e), '#e74c3c'); }
 
         async function sbRpc(fn, body) {
             const c = sbCfg();
@@ -1922,88 +1923,185 @@
             return r.json();
         }
 
-        // Any change to the synced keys marks the local copy dirty and schedules an upload
-        Storage.prototype.setItem = function(k, v) {
-            const prev = (this === localStorage) ? localStorage.getItem(k) : null;
-            sbOrigSet.call(this, k, v);
-            if (prev === String(v)) return; // nothing actually changed
-            if (this === localStorage && SB_KEYS.indexOf(k) !== -1 && !sbApplying) {
-                sbDirtyAt = Date.now();
-                sbOrigSet.call(localStorage, 'sb_dirty_at', String(sbDirtyAt));
-                if (sbReady()) {
-                    clearTimeout(sbPushTimer);
-                    sbPushTimer = setTimeout(() => { sbPush().catch(sbFail); }, 2000);
+        function sbLoad(k) {
+            try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; }
+        }
+        function sbSave(k, o) { sbOrigSet.call(localStorage, k, JSON.stringify(o)); }
+        function sbHash(b) { return JSON.stringify(b, Object.keys(b).sort()); }
+
+        // Track WHEN each link last changed and which links were deleted (tombstones),
+        // so the merge can tell "new here" from "deleted elsewhere".
+        function sbTrackBookmarks(prevStr, newStr) {
+            const now = Date.now();
+            const meta = sbLoad('sb_meta');
+            const tombs = sbLoad('sb_tombs');
+            let prevList = [], newList = [];
+            try { prevList = JSON.parse(prevStr || '[]'); } catch (e) {}
+            try { newList = JSON.parse(newStr || '[]'); } catch (e) {}
+            const urls = new Set();
+            newList.forEach(b => {
+                if (!b || !b.url) return;
+                urls.add(b.url);
+                const h = sbHash(b);
+                if (!meta[b.url] || meta[b.url].h !== h) {
+                    meta[b.url] = { h: h, at: now };
+                    delete tombs[b.url];
                 }
+            });
+            prevList.forEach(b => {
+                if (b && b.url && !urls.has(b.url)) {
+                    tombs[b.url] = now;
+                    delete meta[b.url];
+                }
+            });
+            sbSave('sb_meta', meta);
+            sbSave('sb_tombs', tombs);
+        }
+
+        Storage.prototype.setItem = function(k, v) {
+            const isLS = (this === localStorage);
+            const prev = isLS ? localStorage.getItem(k) : null;
+            sbOrigSet.call(this, k, v);
+            if (!isLS || sbApplying || prev === String(v)) return;
+            if (k === 'bookmarks') {
+                sbTrackBookmarks(prev, String(v));
+            } else if (k === 'playSettings') {
+                sbOrigSet.call(localStorage, 'sb_settings_at', String(Date.now()));
+            } else {
+                return;
+            }
+            if (sbReady()) {
+                clearTimeout(sbPushTimer);
+                sbPushTimer = setTimeout(() => { sbSync().catch(sbFail); }, 2000);
             }
         };
 
-        function sbFail(e) { sbStatus('⚠️ ' + (e && e.message ? e.message : e), '#e74c3c'); }
+        // remote.data -> { bookmarks: [{...,_at}], tombs, settings, settingsAt }
+        function sbNormalizeRemote(d) {
+            if (!d) return null;
+            if (d.v === 2) return d;
+            // v1 (whole-list blob from the first version): treat every link as old
+            let list = [];
+            try { list = JSON.parse(d.bookmarks || '[]'); } catch (e) {}
+            return {
+                v: 2,
+                bookmarks: list.map(b => Object.assign({}, b, { _at: 0 })),
+                tombs: {},
+                settings: typeof d.playSettings === 'string' ? d.playSettings : null,
+                settingsAt: 0
+            };
+        }
 
-        async function sbPush() {
-            if (!sbReady() || sbBusy) return;
+        function sbMerge(remote) {
+            const meta = sbLoad('sb_meta');
+            const tombs = sbLoad('sb_tombs');
+            let local = [];
+            try { local = JSON.parse(localStorage.getItem('bookmarks') || '[]'); } catch (e) {}
+
+            const lmap = new Map();
+            local.forEach(b => {
+                if (!b || !b.url || lmap.has(b.url)) return;
+                const h = sbHash(b);
+                if (!meta[b.url]) meta[b.url] = { h: h, at: 0 };
+                else if (meta[b.url].h !== h) meta[b.url] = { h: h, at: Date.now() };
+                lmap.set(b.url, { b: b, at: meta[b.url].at });
+            });
+
+            const rlist = (remote && remote.bookmarks) || [];
+            const rmap = new Map();
+            rlist.forEach(r => {
+                if (!r || !r.url || rmap.has(r.url)) return;
+                const b = Object.assign({}, r);
+                const at = b._at || 0;
+                delete b._at;
+                rmap.set(r.url, { b: b, at: at });
+            });
+
+            const allTombs = Object.assign({}, (remote && remote.tombs) || {});
+            Object.keys(tombs).forEach(u => { allTombs[u] = Math.max(allTombs[u] || 0, tombs[u]); });
+            const cutoff = Date.now() - 60 * 86400000;
+            Object.keys(allTombs).forEach(u => { if (allTombs[u] < cutoff) delete allTombs[u]; });
+
+            const result = [];
+            const seen = new Set();
+            const consider = url => {
+                if (seen.has(url)) return;
+                seen.add(url);
+                const l = lmap.get(url), r = rmap.get(url);
+                const pick = (l && r) ? (r.at > l.at ? r : l) : (l || r);
+                if (!pick) return;
+                if ((allTombs[url] || 0) > pick.at) return; // deleted more recently than last edit
+                result.push(pick);
+            };
+            local.forEach(b => { if (b && b.url) consider(b.url); });
+            rlist.forEach(r => { if (r && r.url) consider(r.url); });
+
+            const newMeta = {};
+            result.forEach(x => { newMeta[x.b.url] = { h: sbHash(x.b), at: x.at }; });
+
+            const lAt = parseInt(localStorage.getItem('sb_settings_at')) || 0;
+            const lSet = localStorage.getItem('playSettings');
+            const rAt = (remote && remote.settingsAt) || 0;
+            const rSet = remote ? remote.settings : null;
+            let settings = lSet, settingsAt = lAt;
+            if (typeof rSet === 'string' && (rAt > lAt || lSet === null)) { settings = rSet; settingsAt = rAt; }
+
+            return { list: result, meta: newMeta, tombs: allTombs, settings: settings, settingsAt: settingsAt };
+        }
+
+        async function sbSync() {
+            if (!sbReady()) return;
+            if (sbBusy) { sbAgain = true; return; }
             sbBusy = true;
             try {
-                const data = {};
-                SB_KEYS.forEach(k => { const v = localStorage.getItem(k); if (v !== null) data[k] = v; });
-                const startedDirty = sbDirtyAt;
-                const ts = await sbRpc('set_state', { p_code: sbCfg().code, p_data: data });
-                sbOrigSet.call(localStorage, 'sb_synced_at', String(Date.parse(ts)));
-                if (sbDirtyAt === startedDirty) {
-                    sbDirtyAt = 0;
-                    localStorage.removeItem('sb_dirty_at');
-                }
-                sbStatus('✅ تمت المزامنة ' + sbTime(), '#2ecc71');
+                do {
+                    sbAgain = false;
+                    const rows = await sbRpc('get_state', { p_code: sbCfg().code });
+                    const remote = sbNormalizeRemote(rows.length ? rows[0].data : null);
+                    const m = sbMerge(remote);
+
+                    const newStr = JSON.stringify(m.list.map(x => x.b));
+                    const localStr = localStorage.getItem('bookmarks') || '[]';
+                    const settingsChanged = typeof m.settings === 'string' && m.settings !== localStorage.getItem('playSettings');
+                    const changedLocal = newStr !== localStr || settingsChanged;
+
+                    if (changedLocal && !playbackActive) {
+                        sbApplying = true;
+                        try {
+                            sbOrigSet.call(localStorage, 'bookmarks', newStr);
+                            if (typeof m.settings === 'string') sbOrigSet.call(localStorage, 'playSettings', m.settings);
+                            sbSave('sb_meta', m.meta);
+                            sbSave('sb_tombs', m.tombs);
+                            sbOrigSet.call(localStorage, 'sb_settings_at', String(m.settingsAt));
+                            loadBookmarks();
+                        } finally {
+                            sbApplying = false;
+                        }
+                    } else {
+                        sbSave('sb_tombs', m.tombs);
+                    }
+
+                    const payload = JSON.stringify({
+                        v: 2,
+                        bookmarks: m.list.map(x => Object.assign({}, x.b, { _at: x.at })),
+                        tombs: m.tombs,
+                        settings: m.settings,
+                        settingsAt: m.settingsAt
+                    });
+                    if (payload !== sbLastPayload || !remote) {
+                        await sbRpc('set_state', { p_code: sbCfg().code, p_data: JSON.parse(payload) });
+                        sbLastPayload = payload;
+                    }
+                    sbStatus('✅ تمت المزامنة ' + sbTime(), '#2ecc71');
+                } while (sbAgain);
             } finally {
                 sbBusy = false;
             }
         }
 
-        function sbApply(row) {
-            sbApplying = true;
-            try {
-                const d = row.data || {};
-                SB_KEYS.forEach(k => { if (typeof d[k] === 'string') sbOrigSet.call(localStorage, k, d[k]); });
-                sbOrigSet.call(localStorage, 'sb_synced_at', String(Date.parse(row.updated_at)));
-                sbDirtyAt = 0;
-                localStorage.removeItem('sb_dirty_at');
-                loadBookmarks();
-            } finally {
-                sbApplying = false;
-            }
-            sbStatus('✅ حُمّلت من السحابة ' + sbTime(), '#2ecc71');
-        }
-
-        async function sbPull() {
-            if (!sbReady() || sbBusy) return;
-            const rows = await sbRpc('get_state', { p_code: sbCfg().code });
-            if (!rows.length) { await sbPush(); return; } // first device: upload what we have
-            const row = rows[0];
-            const remoteT = Date.parse(row.updated_at);
-            const syncedAt = parseInt(localStorage.getItem('sb_synced_at')) || 0;
-            if (remoteT > syncedAt) {
-                const hasLocal = (JSON.parse(localStorage.getItem('bookmarks') || '[]')).length > 0;
-                if (syncedAt === 0 && hasLocal) {
-                    // first connection of a device that already has links
-                    if (!confirm('توجد بيانات محفوظة في السحابة.\nموافق = تحميلها واستبدال بيانات هذا الجهاز.\nإلغاء = رفع بيانات هذا الجهاز بدلاً منها.')) {
-                        await sbPush();
-                        return;
-                    }
-                    sbApply(row);
-                } else if (sbDirtyAt && sbDirtyAt > remoteT) {
-                    await sbPush(); // our local edit is newer
-                } else if (!playbackActive) {
-                    sbApply(row);
-                }
-            } else if (sbDirtyAt) {
-                await sbPush();
-            } else {
-                sbStatus('✅ محدّث ' + sbTime(), '#2ecc71');
-            }
-        }
-
         function sbSyncNow() {
             if (!sbReady()) { sbStatus('غير مفعّلة'); return Promise.resolve(); }
-            return sbPull().catch(sbFail);
+            return sbSync().catch(sbFail);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -2026,7 +2124,6 @@
             document.getElementById('sbOff').addEventListener('click', function() {
                 localStorage.removeItem('sb_key');
                 localStorage.removeItem('sb_code');
-                localStorage.removeItem('sb_synced_at');
                 keyEl.value = ''; codeEl.value = '';
                 sbStatus('غير مفعّلة');
             });
@@ -2034,7 +2131,7 @@
             setInterval(sbSyncNow, 45000);
         });
         document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden' && sbDirtyAt && sbReady()) sbPush().catch(() => {});
+            if (document.visibilityState === 'hidden' && sbReady()) sbSync().catch(() => {});
         });
 
         // Close playback window when the page is unloaded
