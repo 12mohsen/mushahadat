@@ -327,16 +327,24 @@
             border-radius: 4px;
             margin-top: 10px;
         }
-        .bookmark-time {
-            color: #2ecc71;
+        .bookmark-postpone {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
             font-size: 12px;
-            background: #2c3e50;
-            padding: 2px 8px;
-            border-radius: 10px;
-            min-width: 50px;
-            text-align: center;
-            white-space: nowrap;
+            color: #aaa;
         }
+        .bookmark-postpone input.link-postpone {
+            width: 52px;
+            padding: 3px 4px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1f2a36;
+            color: #eee;
+            text-align: center;
+        }
+        .postpone-status { color: #f39c12; white-space: nowrap; }
+        .bookmark-item.postponed { opacity: 0.6; }
         .bookmark-views {
             color: #888;
             font-size: 12px;
@@ -924,7 +932,7 @@
                     unit: item.querySelector('.link-unit').value,
                     repeat: item.querySelector('.link-repeat').value,
                     external: item.querySelector('.link-external').checked,
-                    time: Math.round(parseFloat((item.querySelector('.bookmark-time') || {getAttribute: () => 0}).getAttribute('data-time')) || 0)
+                    postponeUntil: parseInt(item.getAttribute('data-postpone-until')) || 0
                 });
             });
             localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
@@ -1028,15 +1036,28 @@
             viewsSpan.textContent = `${views} مشاهدة`;
             statsContainer.appendChild(viewsSpan);
 
-            // Total time spent inside this link (counts while it is the one playing)
-            const timeSpan = document.createElement('span');
-            timeSpan.className = 'bookmark-time';
-            timeSpan.title = 'إجمالي الوقت الذي قضيته داخل هذا الرابط';
-            timeSpan.setAttribute('data-time', settings.time || 0);
-            timeSpan.textContent = '⏱ ' + formatTime(settings.time || 0);
-            statsContainer.appendChild(timeSpan);
+            // Postpone: don't auto-play this link for N days (1 = today only)
+            const postponeWrap = document.createElement('span');
+            postponeWrap.className = 'bookmark-postpone';
+            postponeWrap.title = 'لا يُشغَّل هذا الرابط تلقائياً لعدد الأيام المحدد (1 = اليوم فقط، 0 = إلغاء التأجيل)';
+            const postponeLabel = document.createElement('span');
+            postponeLabel.textContent = 'تأجيل (أيام):';
+            const postponeInput = document.createElement('input');
+            postponeInput.type = 'number';
+            postponeInput.min = '0';
+            postponeInput.max = '365';
+            postponeInput.placeholder = '0';
+            postponeInput.className = 'link-postpone';
+            postponeInput.addEventListener('change', () => setPostpone(li, postponeInput.value));
+            const postponeStatus = document.createElement('span');
+            postponeStatus.className = 'postpone-status';
+            postponeWrap.appendChild(postponeLabel);
+            postponeWrap.appendChild(postponeInput);
+            postponeWrap.appendChild(postponeStatus);
+            statsContainer.appendChild(postponeWrap);
             
             li.appendChild(statsContainer);
+            applyPostpone(li, parseInt(settings.postponeUntil) || 0);
 
             // Controls section
             const controls = document.createElement('div');
@@ -1321,15 +1342,62 @@
             }, 3000);
         }
 
+        // ---- Postpone a link for N days ----
+        function pad2(n) { return String(n).padStart(2, '0'); }
+        function fmtDate(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+
+        function isSkipped(item) {
+            if (item.classList.contains('excluded')) return true;
+            return (parseInt(item.getAttribute('data-postpone-until')) || 0) > Date.now();
+        }
+
+        function applyPostpone(li, until) {
+            const input = li.querySelector('.link-postpone');
+            const status = li.querySelector('.postpone-status');
+            if (until > Date.now()) {
+                li.setAttribute('data-postpone-until', until);
+                li.classList.add('postponed');
+                if (status) status.textContent = '⏸ يعود ' + fmtDate(new Date(until));
+                if (input && document.activeElement !== input) {
+                    const today = new Date(); today.setHours(0, 0, 0, 0);
+                    input.value = Math.max(1, Math.round((until - today.getTime()) / 86400000));
+                }
+            } else {
+                li.removeAttribute('data-postpone-until');
+                li.classList.remove('postponed');
+                if (status) status.textContent = '';
+                if (input && document.activeElement !== input) input.value = '';
+            }
+        }
+
+        function setPostpone(li, days) {
+            const n = parseInt(days) || 0;
+            let until = 0;
+            if (n > 0) {
+                const d = new Date();
+                d.setHours(0, 0, 0, 0);
+                d.setDate(d.getDate() + n); // N days counting today
+                until = d.getTime();
+            }
+            applyPostpone(li, until);
+            saveBookmarks();
+        }
+
+        function refreshPostponed() {
+            document.querySelectorAll('.bookmark-item').forEach(li => {
+                applyPostpone(li, parseInt(li.getAttribute('data-postpone-until')) || 0);
+            });
+        }
+
         function updateStatus() {
             const statusText = document.getElementById('playbackStatus');
             const repeatCount = parseInt(document.getElementById('repeatCount').value);
             const totalBookmarks = Array.from(document.querySelectorAll('.bookmark-item'))
-                .filter(item => !item.classList.contains('excluded')).length;
+                .filter(item => !isSkipped(item)).length;
             
             if (playbackActive) {
                 const currentBookmarkIndex = Array.from(document.querySelectorAll('.bookmark-item'))
-                    .filter(item => !item.classList.contains('excluded'))
+                    .filter(item => !isSkipped(item))
                     .indexOf(document.querySelector('.bookmark-item.playing')) + 1;
                 
                 let status = `الرابط ${currentBookmarkIndex} من ${totalBookmarks}`;
@@ -1366,7 +1434,7 @@
             const all = Array.from(document.querySelectorAll('.bookmark-item'));
             const repeatCount = parseInt(document.getElementById('repeatCount').value) || 0;
             
-            if (!all.some(item => !item.classList.contains('excluded'))) {
+            if (!all.some(item => !isSkipped(item))) {
                 stopPlayback();
                 alert('لا توجد روابط متاحة للتشغيل');
                 return;
@@ -1380,7 +1448,7 @@
             all.forEach(item => item.classList.remove('playing'));
 
             // Find next non-excluded bookmark (wrapping around and counting rounds)
-            while (!all[currentIndex] || all[currentIndex].classList.contains('excluded')) {
+            while (!all[currentIndex] || isSkipped(all[currentIndex])) {
                 currentIndex++;
                 if (currentIndex >= all.length) {
                     currentIndex = 0;
@@ -1476,7 +1544,7 @@
             
             // Open the external window right now (inside the click) if any link needs it
             const playable = Array.from(document.querySelectorAll('.bookmark-item'))
-                .filter(item => !item.classList.contains('excluded'));
+                .filter(item => !isSkipped(item));
             const needsExternal = playable.length > 0
                 && !playable[0].querySelector('.link-external').checked
                 && playable.some(item => item.querySelector('.link-external').checked);
@@ -1736,24 +1804,8 @@
         document.getElementById('randomMode').addEventListener('change', saveSettings);
         document.querySelectorAll('.random-opt').forEach(i => i.addEventListener('change', saveSettings));
 
-        // Accumulate the time spent in whichever link is currently playing
-        let lastTimeTick = Date.now();
-        let unsavedTime = 0;
-        setInterval(function() {
-            const now = Date.now();
-            const delta = Math.min((now - lastTimeTick) / 1000, 120);
-            lastTimeTick = now;
-            const active = document.querySelector('.bookmark-item.playing, .bookmark-item[data-playing="true"]');
-            if (!active) return;
-            const span = active.querySelector('.bookmark-time');
-            if (!span) return;
-            const total = (parseFloat(span.getAttribute('data-time')) || 0) + delta;
-            span.setAttribute('data-time', total);
-            span.textContent = '⏱ ' + formatTime(total);
-            unsavedTime += delta;
-            if (unsavedTime >= 10) { unsavedTime = 0; saveBookmarks(); }
-        }, 1000);
-        window.addEventListener('pagehide', function() { saveBookmarks(); });
+        // Re-check postponed links every minute (a link comes back automatically on its date)
+        setInterval(refreshPostponed, 60000);
 
         // Close playback window when the page is unloaded
         window.addEventListener('unload', function() {
