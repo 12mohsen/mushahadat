@@ -931,6 +931,7 @@
                         <button type="button" id="sbNow">مزامنة الآن</button>
                         <button type="button" id="sbOff" class="off">إيقاف</button>
                         <button type="button" id="sbLink">🔗 رابط النقل</button>
+                        <button type="button" id="sbClear" class="ghost">🧹 تفريغ الحقول</button>
                     </div>
                     <div class="sync-row" id="sbLinkRow" style="display:none">
                         <input type="text" id="sbLinkOut" dir="ltr" readonly>
@@ -941,6 +942,7 @@
             </div>
         </div>
 
+        <!-- أُلغي قسم «حسابي» بطلب المستخدم. لإرجاعه، احذف السطرين اللذين يفتحان ويغلقان هذا التعليق.
         <div class="account-section" id="accountSection">
             <div class="panel-head">
                 <h2>حسابي</h2>
@@ -966,9 +968,9 @@
                     <button type="button" id="logoutBtn" class="ghost">خروج</button>
                 </div>
             </div>
-            <div class="hint-text">الحساب الأول الذي يُنشأ يصبح مديراً للنظام. البيانات تُزامَن مع Supabase، وللدخول لنفس الحساب من متصفح آخر استخدم «🔗 رابط النقل» في قسم المزامنة أولاً.</div>
             <div id="authMsg" class="msg-line"></div>
         </div>
+        -->
 
         <div class="services-section">
             <div class="panel-head">
@@ -4507,6 +4509,15 @@
             });
             const linkBtn = document.getElementById('sbLink');
             if (linkBtn) linkBtn.addEventListener('click', sbCopyTransferLink);
+            const clearBtn = document.getElementById('sbClear');
+            if (clearBtn) clearBtn.addEventListener('click', function() {
+                keyEl.value = ''; codeEl.value = '';
+                const out = document.getElementById('sbLinkOut');
+                if (out) out.value = '';
+                const row = document.getElementById('sbLinkRow');
+                if (row) row.style.display = 'none';
+                sbStatus('🧹 تم تفريغ الحقول — الإعدادات المحفوظة لم تُحذف (استخدم «إيقاف» لحذفها)', '#f39c12');
+            });
             if (sbReady()) { sbStatus('جارٍ المزامنة...'); setTimeout(sbSyncNow, 1200); }
             setInterval(sbSyncNow, 45000);
         });
