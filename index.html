@@ -341,7 +341,7 @@
         .sync-panel input { padding: 6px 8px; border: 1px solid #444; border-radius: 4px; background: #1f2a36; color: #eee; min-width: 200px; flex: 1; }
         .sync-panel button { padding: 6px 12px; border: 0; border-radius: 4px; background: #3498db; color: #fff; cursor: pointer; }
         .sync-panel button.off { background: #7f8c8d; }
-        #syncState { margin-inline-start: 8px; font-size: 12px; }
+        #syncState, #provState, #exState, #netState { margin-inline-start: 8px; font-size: 12px; }
         .bookmark-postpone {
             display: inline-flex;
             align-items: center;
@@ -368,6 +368,52 @@
             border-radius: 10px;
             min-width: 50px;
             text-align: center;
+            display: inline-block;
+            transition: color 0.25s ease, background-color 0.25s ease;
+        }
+        .bookmark-views.views-bump {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.18);
+            animation: viewsBump 0.7s ease;
+        }
+        @keyframes viewsBump {
+            0% { transform: scale(1); }
+            35% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        .views-ticker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #95a5a6;
+            font-size: 13px;
+            margin-inline-start: 12px;
+        }
+        .views-ticker strong {
+            color: #2ecc71;
+            font-size: 16px;
+            min-width: 24px;
+            text-align: center;
+        }
+        .views-toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: #27ae60;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 14px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            z-index: 3000;
+            pointer-events: none;
+        }
+        .views-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
         }
         .bookmark-play-button {
             background-color: #27ae60;
@@ -572,14 +618,249 @@
             white-space: nowrap;
         }
         .auto-external input { cursor: pointer; }
+        .frame-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            background: #34495e;
+            border: 1px solid #2c3e50;
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #ecf0f1;
+        }
+        .frame-bar.visible { display: flex; }
+        .frame-bar .frame-url {
+            flex: 1;
+            min-width: 160px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #9ecbf0;
+            direction: ltr;
+            text-align: left;
+        }
+        .frame-bar button {
+            background: #f39c12;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .frame-bar button:hover { background: #d68910; }
+        .frame-bar .frame-hint { color: #95a5a6; font-size: 12px; }
+        .services-section, .orders-section {
+            background: #34495e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .panel-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+        .panel-head h2 { margin: 0; font-size: 20px; color: #ecf0f1; }
+        .wallet-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #2c3e50;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .wallet-box strong { color: #2ecc71; font-size: 18px; }
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .service-card {
+            background: #2c3e50;
+            border: 1px solid #3d566e;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .service-card .svc-icon { font-size: 22px; }
+        .service-card .svc-name { font-weight: bold; color: #ecf0f1; }
+        .service-card .svc-price { color: #f39c12; font-size: 14px; }
+        .service-card .svc-range { color: #95a5a6; font-size: 12px; }
+        .service-card button {
+            margin-top: 4px;
+            background: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .service-card button:hover { background: #3498db; }
+        .order-box { background: #2c3e50; border-radius: 8px; padding: 14px; }
+        .order-box h3 { margin: 0 0 12px; font-size: 16px; color: #ecf0f1; }
+        .order-row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+        .order-row label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 12px;
+            color: #95a5a6;
+            flex: 1;
+            min-width: 150px;
+        }
+        .order-row input, .order-row select {
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1f2a36;
+            color: #eee;
+            font-size: 14px;
+        }
+        .order-cost { font-size: 14px; color: #ecf0f1; padding: 8px 0; }
+        .order-cost strong { color: #2ecc71; }
+        #placeOrderBtn {
+            background: #27ae60;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        #placeOrderBtn:hover { background: #2ecc71; }
+        #orderMsg { font-size: 13px; margin-top: 6px; min-height: 18px; }
+        .order-box .hint-text { margin: 6px 0 0; }
+        .admin-panel { margin-top: 12px; font-size: 13px; color: #ccc; }
+        .admin-panel summary { cursor: pointer; padding: 6px 0; }
+        .admin-prices { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .admin-price-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            background: #2c3e50;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        .admin-price-row span { flex: 1; min-width: 120px; }
+        .admin-price-row input {
+            width: 90px;
+            padding: 5px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1f2a36;
+            color: #eee;
+        }
+        .orders-list { display: flex; flex-direction: column; gap: 10px; }
+        .order-item { background: #2c3e50; border-radius: 8px; padding: 12px; font-size: 13px; }
+        .order-item .order-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .order-item .order-link {
+            color: #3498db;
+            direction: ltr;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-top: 6px;
+        }
+        .status-chip { padding: 2px 10px; border-radius: 12px; font-size: 12px; }
+        .status-chip.pending { background: #f39c12; color: #fff; }
+        .status-chip.done { background: #2ecc71; color: #fff; }
+        .status-chip.canceled { background: #e74c3c; color: #fff; }
+        .progress-track { height: 8px; background: #1f2a36; border-radius: 4px; overflow: hidden; margin: 8px 0 6px; }
+        .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, #2980b9, #2ecc71); transition: width 0.4s ease; }
+        .order-meta { color: #95a5a6; font-size: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+        .order-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+        .order-actions button {
+            background: #e74c3c;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .order-actions button.del { background: #7f8c8d; }
+        .order-actions button:hover { opacity: 0.9; }
+        .orders-empty { color: #95a5a6; font-size: 13px; }
+
+        .account-section, .deposits-section, .admin-section {
+            background: #34495e;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        .account-state { color: #95a5a6; font-size: 13px; }
+        .auth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            align-items: end;
+        }
+        .auth-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #95a5a6; }
+        .auth-grid input {
+            padding: 8px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1f2a36;
+            color: #eee;
+            font-size: 14px;
+        }
+        .auth-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .auth-actions button, #depBtn {
+            background: #2980b9;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 9px 16px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .auth-actions button:hover, #depBtn:hover { background: #3498db; }
+        button.ghost { background: #7f8c8d; }
+        button.ghost:hover { background: #95a5a6; }
+        .account-box { background: #2c3e50; border-radius: 8px; padding: 12px; }
+        .account-line { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .role-chip { background: #2980b9; color: #fff; border-radius: 12px; padding: 2px 10px; font-size: 12px; }
+        .role-chip.admin { background: #8e44ad; }
+        .msg-line { font-size: 13px; min-height: 18px; margin-top: 8px; }
+        .admin-block { margin-bottom: 18px; }
+        .admin-block h3 { margin: 0 0 8px; font-size: 15px; color: #ecf0f1; }
+        .order-actions button.ok { background: #27ae60; }
+        .order-actions button.warn { background: #f39c12; }
+        .order-actions select, .order-actions input[type="number"] { font-size: 12px; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="top-section">
+            <div id="frameBar" class="frame-bar">
+                <span>الإطار:</span>
+                <span id="frameBarUrl" class="frame-url"></span>
+                <span class="frame-hint">إن بقي أبيض فارغاً فالموقع يمنع العرض داخل الصفحة</span>
+                <button id="frameFallbackBtn" onclick="openCurrentInFallback()">فتح في النافذة الاحتياطية</button>
+            </div>
             <iframe name="playbackFrame" src="about:blank" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
             <div id="iframeError" style="display: none; background-color: #e74c3c; color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-                إذا لم يظهر الموقع في الإطار فقد يمنع عرضه داخل صفحات أخرى، استخدم زر "فتح في نافذة خارجية" بجانب الرابط.
+                الموقع يمنع عرض محتواه داخل الصفحة. استخدم زر "فتح في النافذة الاحتياطية" أعلاه — يُفتح كل رابط في نافذة جديدة وتُغلق نافذة الرابط السابق عند انتهاء وقته.
             </div>
             
             <div id="addBookmarkForm">
@@ -627,21 +908,213 @@
                     <input type="number" class="random-opt" value="60" min="1">
                     <span>ثانية</span>
                 </div>
+                <div class="random-row">
+                    <label>
+                        <input type="checkbox" id="realMode">
+                        🔊 وضع المشاهدة الحقيقية (صوت + نافذة ظاهرة بدل الإطار الصامت):
+                    </label>
+                    <input type="number" id="realMinSeconds" value="30" min="10" max="600">
+                    <span>ثانية كحدّ أدنى لكل رابط</span>
+                </div>
+                <div class="hint-text" id="realModeHint">عند التفعيل يُفتح رابط المنصة الأصلي (يوتيوب/تيك توك…) في نافذة أو تبويب ظاهر بالصوت، وتُرفع مدة كل رابط إلى الحدّ الأدنى أعلاه. قد يطلب المتصفح نقرة واحدة للتشغيل بالصوت، والمنصات تفلتر المشاهدات المتكرّرة من نفس الجهاز/الشبكة فقد لا يتغيّر العدّاد العام.</div>
                 <div class="hint-text">يمكنك تحديد فترة مختلفة لكل رابط من خانة «الفترة» بجانبه. إذا تُركت فارغة يُستخدم الوضع العشوائي (إن كان مفعّلاً) وإلا الفاصل الافتراضي.</div>
                 <div id="playbackStatus"></div>
+                <div class="views-ticker" title="عداد داخلي داخل التطبيق فقط — لا يغيّر عدّاد المنصة الأصلية">إجمالي المشاهدات (داخل التطبيق): <strong id="viewsTotalCount">0</strong> مشاهدة</div>
                 <details class="sync-panel" id="syncPanel">
                     <summary>☁️ المزامنة (Supabase)<span id="syncState">غير مفعّلة</span></summary>
                     <div class="sync-row">
                         <input type="password" id="sbKey" placeholder="مفتاح Supabase (anon / publishable)" autocomplete="new-password">
-                        <input type="password" id="sbCode" placeholder="رمز المزامنة السرّي (8 أحرف على الأقل)" autocomplete="new-password">
+                        <input type="password" id="sbCode" placeholder="رمز المزامنة (يُشتق من اسم المستخدم إن تُرك فارغاً)" autocomplete="new-password">
                     </div>
                     <div class="sync-row">
                         <button type="button" id="sbSave">حفظ وتفعيل</button>
                         <button type="button" id="sbNow">مزامنة الآن</button>
                         <button type="button" id="sbOff" class="off">إيقاف</button>
+                        <button type="button" id="sbLink">🔗 رابط النقل</button>
                     </div>
+                    <div class="sync-row" id="sbLinkRow" style="display:none">
+                        <input type="text" id="sbLinkOut" dir="ltr" readonly>
+                    </div>
+                    <div class="hint-text">عند التفعيل تُزامَن أيضاً الحسابات والأرصدة والطلبات والإيداعات، وليس قائمة الروابط فقط.</div>
+                    <div class="hint-text">لاستخدام نفس الحساب والروابط في متصفح آخر أو نافذة خفي: اضغط «🔗 رابط النقل» في المتصفح الذي يعمل ثم افتح الرابط الناتج هناك مرة واحدة — سيستورد إعدادات المزامنة ويسحب كل البيانات تلقائياً. الرابط يحتوي مفتاحك ورمز المزامنة فلا تشاركه مع أحد.</div>
                 </details>
             </div>
+        </div>
+
+        <div class="account-section" id="accountSection">
+            <div class="panel-head">
+                <h2>حسابي</h2>
+                <div class="account-state" id="accountState">غير مسجل الدخول</div>
+            </div>
+            <div id="authForm" class="auth-grid">
+                <label>اسم المستخدم
+                    <input type="text" id="authUser" dir="ltr" autocomplete="username" placeholder="username">
+                </label>
+                <label>كلمة المرور
+                    <input type="password" id="authPass" dir="ltr" autocomplete="current-password" placeholder="••••••">
+                </label>
+                <div class="auth-actions">
+                    <button type="button" id="loginBtn">تسجيل الدخول</button>
+                    <button type="button" id="signupBtn" class="ghost">إنشاء حساب</button>
+                </div>
+            </div>
+            <div id="accountBox" class="account-box" style="display:none">
+                <div class="account-line">
+                    <strong id="accountUser"></strong>
+                    <span class="role-chip" id="accountRole">مستخدم</span>
+                    <span class="wallet-box"><span>الرصيد:</span><strong id="walletPoints">0</strong><span>نقطة</span></span>
+                    <button type="button" id="logoutBtn" class="ghost">خروج</button>
+                </div>
+            </div>
+            <div class="hint-text">الحساب الأول الذي يُنشأ يصبح مديراً للنظام. البيانات تُزامَن مع Supabase، وللدخول لنفس الحساب من متصفح آخر استخدم «🔗 رابط النقل» في قسم المزامنة أولاً.</div>
+            <div id="authMsg" class="msg-line"></div>
+        </div>
+
+        <div class="services-section">
+            <div class="panel-head">
+                <h2>لوحة الخدمات</h2>
+                <div class="panel-stats">مساران للتسليم الحقيقي: 🌐 مزوّد API مدفوع (رصيد عند المزوّد) — أو 🤝 شبكة تبادل مجانية تماماً يفتح فيها الأعضاء رابطك مقابل أن تفتح روابطهم. بدون أي منهما يبقى العدّاد داخلياً في التطبيق فقط.</div>
+            </div>
+            <div id="servicesGrid" class="services-grid"></div>
+
+            <div class="order-box">
+                <h3>طلب جديد</h3>
+                <div class="order-row">
+                    <label>الخدمة
+                        <select id="orderService"></select>
+                    </label>
+                    <label>الرابط
+                        <input type="text" id="orderLink" placeholder="https://..." dir="ltr">
+                    </label>
+                    <label>الكمية
+                        <input type="number" id="orderQty" min="1" value="1000">
+                    </label>
+                    <div class="order-cost">التكلفة: <strong id="orderCost">0</strong> نقطة</div>
+                    <button type="button" id="placeOrderBtn">تأكيد الطلب</button>
+                </div>
+                <div class="hint-text" id="orderHint"></div>
+                <div id="orderMsg" class="msg-line"></div>
+            </div>
+
+            <details class="sync-panel" id="providerPanel">
+                <summary>🌐 ربط مزوّد خدمات حقيقي (API)<span id="provState">غير مفعّل</span></summary>
+                <div class="sync-row">
+                    <input type="text" id="provUrl" dir="ltr" placeholder="https://smmflare.com/api/v2" autocomplete="off">
+                    <input type="password" id="provKey" dir="ltr" placeholder="مفتاح API الخاص بحسابك عند المزوّد" autocomplete="new-password">
+                </div>
+                <div class="sync-row">
+                    <input type="text" id="provProxy" dir="ltr" placeholder="وسيط CORS اختياري: https://proxy.example/?url=" autocomplete="off">
+                    <button type="button" id="provSave">حفظ</button>
+                    <button type="button" id="provTest">اختبار الاتصال والرصيد</button>
+                    <button type="button" id="provLoadServices">جلب الخدمات</button>
+                    <button type="button" id="provSyncOrders">مزامنة الطلبات</button>
+                </div>
+                <div class="hint-text" id="provMsg"></div>
+                <div class="hint-text">بعد الربط يُرسَل الطلب إلى المزوّد فعلياً (action=add) ليُسلّم مشاهدات حقيقية على الرابط خارج المتصفح، وتُقرأ حالته (action=status) تلقائياً. تحتاج حساباً ورصيداً عند المزوّد، والمفتاح يُخزَّن في هذا المتصفح فقط ولا يُزامَن.</div>
+                <div class="hint-text">إن ظهر خطأ CORS فالمزوّد لا يسمح بالنداء من المتصفح — ضع وسيط CORS في الحقل أعلاه، أو نفّذ النداء من سيرفر/Cloudflare Worker خاص بك.</div>
+                <div class="hint-text">نصيحة تسعير: اجعل سعر الخدمة هنا (نقاط لكل 1000) أعلى من سعر المزوّد لكل 1000 حتى لا تخسر فرقاً عند كل طلب.</div>
+                <div id="provMap" class="admin-prices"></div>
+            </details>
+
+            <details class="sync-panel" id="exchangePanel">
+                <summary>🤝 شبكة تبادل المشاهدات المجانية (بدون أي دفع)<span id="exState">سجّل الدخول</span></summary>
+                <div class="sync-row">
+                    <input type="text" id="exUrl" dir="ltr" placeholder="رابطك الذي تريد رفع مشاهداته">
+                    <input type="number" id="exQty" min="1" value="50" style="flex:0 0 110px;min-width:110px">
+                    <button type="button" id="exAdd">أضف رابطي للشبكة</button>
+                </div>
+                <div class="sync-row">
+                    <button type="button" id="exWatch">▶️ شاهد واكسب نقاطاً</button>
+                    <button type="button" id="exStop" class="off">إيقاف</button>
+                    <button type="button" id="exRefresh">🔄 تحديث الشبكة</button>
+                </div>
+                <div class="hint-text" id="exMsg"></div>
+                <div class="hint-text">طريقة العمل: تشاهد أنت روابط الأعضاء (فتح حقيقي بالصوت لمدة كافية) فتكسب «نقاط تبادل»، وبنقاطك يفتح الأعضاء رابطك. لا مال ولا اشتراك — الثمن هو وقتك فقط.</div>
+                <div class="hint-text">🎁 كسر الحلقة المفرغة: عند أول استخدام تُمنح <b>50 نقطة ترحيب</b> تُضيف بها رابطك فوراً ولو كان رصيدك صفراً. وإذا نفد رصيدك مرة أخرى ولم يبقَ شيء، تُمنح <b>قرض بدء 25 نقطة</b> مرة واحدة تُسدَّد بمشاهدة روابط الأعضاء. وإن طلبت أكثر من رصيدك يضيف التطبيق ما تملكه ويحفظ الباقي لإضافته لاحقاً.</div>
+                <div class="hint-text">⚠️ المنصات تحتسب المشاهدة من كل جهاز/شبكة مرة واحدة تقريباً، لذلك كثّر الأجهزة/الشبكات (هاتف + حاسب + أصدقاء) لكل رابط تحتاج مشاهدات كثيرة. مشاهدة رابطك بنفسك لا تُحتسب.</div>
+                <div class="hint-text">الروابط المضافة في الشبكة عامة لكل من يعرف رمزها، ولا يمكن التحقق برمجياً من مشاهدة الأعضاء — الشبكة قائمة على الثقة والمصلحة المتبادلة.</div>
+                <div id="exList" class="orders-list"></div>
+            </details>
+
+            <details class="sync-panel" id="netPanel">
+                <summary>🌍 مدير تبديل الشبكة (IP) — مشاهدات من شبكات مختلفة<span id="netState">غير مقروءة</span></summary>
+                <div class="sync-row">
+                    <input type="text" id="netUrl" dir="ltr" placeholder="رابط تريد فتحه من شبكات متعددة">
+                    <button type="button" id="netOpen">فتح الآن من هذه الشبكة</button>
+                    <button type="button" id="netCheck">تحقق من الشبكة</button>
+                </div>
+                <div class="sync-row">
+                    <label style="display:flex;align-items:center;gap:6px;flex:1">
+                        <input type="checkbox" id="netAlias" style="flex:0 0 auto;min-width:0;width:16px;height:16px"> تبديل الواجهة تلقائياً (Translate / نسخة الجوال) — مجاني وبلا تسجيل
+                    </label>
+                </div>
+                <div class="hint-text" id="netInfo">اضغط «تحقق من الشبكة» لقراءة عنوان شبكتك الحالي.</div>
+                <div class="hint-text">لا يستطيع أي كود إنشاء IP جديد، لكن تغييره مجاناً ممكن: ① وضع الطيران 10 ثوانٍ ثم إعادة بيانات الجوال (غالباً يعطي IP جديداً) ② تبديل عقدة VPN مجانية ③ نقطة اتصال من جهاز/شريحة أخرى. اضغط «تحقق من الشبكة» بعد كل تبديل، واللوحة تسجّل الشبكات ولا تعدّ الشبكة نفسها مرتين لنفس الرابط.</div>
+                <div class="hint-text">«تبديل الواجهة» يفتح الرابط عبر مسار مختلف (ترجمة جوجل أو نسخة الجوال) فتتغيّر نقطة الوصول والملف التعريفي — استخدمه مع تبديل الشبكة لأقوى أثر.</div>
+                <div class="hint-text" id="netMsg"></div>
+                <div id="netUrlList" class="orders-list"></div>
+            </details>
+        </div>
+
+        <div class="deposits-section">
+            <div class="panel-head">
+                <h2>الإيداع</h2>
+                <div class="panel-stats" id="depositStats">طلبات الإيداع تُراجَع يدوياً من الإدارة</div>
+            </div>
+            <div class="order-row">
+                <label>المبلغ (نقطة)
+                    <input type="number" id="depAmount" min="1" value="1000">
+                </label>
+                <label>طريقة الدفع
+                    <select id="depMethod">
+                        <option value="bank">تحويل بنكي</option>
+                        <option value="wallet">محفظة إلكترونية</option>
+                        <option value="usdt">USDT</option>
+                        <option value="other">أخرى</option>
+                    </select>
+                </label>
+                <label>مرجع العملية
+                    <input type="text" id="depRef" dir="ltr" placeholder="رقم الحوالة">
+                </label>
+                <label>ملاحظة
+                    <input type="text" id="depNote">
+                </label>
+                <button type="button" id="depBtn">إرسال طلب إيداع</button>
+            </div>
+            <div class="hint-text">تُضاف النقاط إلى رصيدك فقط بعد اعتماد الإدارة للطلب.</div>
+            <div id="depMsg" class="msg-line"></div>
+            <div id="depList" class="orders-list"></div>
+        </div>
+
+        <div class="orders-section">
+            <div class="panel-head">
+                <h2>طلباتي</h2>
+                <div class="panel-stats" id="ordersStats"></div>
+            </div>
+            <div id="ordersList" class="orders-list"></div>
+        </div>
+
+        <div class="admin-section" id="adminSection" style="display:none">
+            <div class="panel-head">
+                <h2>لوحة الإدارة</h2>
+                <div class="panel-stats" id="adminStats"></div>
+            </div>
+            <div class="admin-block">
+                <h3>طلبات الإيداع المعلّقة</h3>
+                <div id="adminDeposits" class="orders-list"></div>
+            </div>
+            <div class="admin-block">
+                <h3>كل الطلبات</h3>
+                <div id="adminOrders" class="orders-list"></div>
+            </div>
+            <div class="admin-block">
+                <h3>الحسابات والأرصدة</h3>
+                <div id="adminAccounts" class="orders-list"></div>
+            </div>
+            <details class="admin-panel" open>
+                <summary>⚙️ الخدمات والأسعار والحدود</summary>
+                <div id="adminPrices" class="admin-prices"></div>
+            </details>
         </div>
 
         <div class="bookmarks-section">
@@ -651,7 +1124,7 @@
         </div>
         
         <footer class="footer">
-            تم التطوير بواسطة <span>abdmohsen</span>
+            تم التطوير بواسطة <span>abdmohsen</span> © 2026
         </footer>
     </div>
 
@@ -665,11 +1138,44 @@
         let countdownInterval = null;
         let remainingSeconds = 0;
         let playbackActive = false;
+        let viewVerifyToken = 0;
         let isLoading = false;
         let countdownEnd = 0;
         const UNIT_SECONDS = { s: 1, m: 60, h: 3600 };
 
         let frameLoadToken = 0;
+        let frameTargetToken = 0;
+        let lastFrameLoadToken = 0;
+        let frameFallbackTimer = null;
+        let currentFrameUrl = '';
+        const FRAME_LOAD_GRACE_MS = 8000;
+
+        // Hosts that refuse embedding via X-Frame-Options / CSP frame-ancestors.
+        // These links use the fallback window instead of the iframe.
+        const NON_EMBEDDABLE_HOSTS = [
+            'google.com', 'googleusercontent.com',
+            'facebook.com', 'fb.com', 'messenger.com',
+            'instagram.com', 'threads.net',
+            'x.com', 'twitter.com',
+            'tiktok.com', 'snapchat.com',
+            'whatsapp.com', 'wa.me', 'telegram.org', 't.me',
+            'linkedin.com', 'discord.com', 'discord.gg',
+            'reddit.com', 'quora.com', 'pinterest.com',
+            'amazon.com', 'amazon.sa', 'noon.com',
+            'paypal.com', 'apple.com', 'icloud.com',
+            'netflix.com', 'shahid.net', 'spotify.com',
+            'chatgpt.com', 'openai.com',
+            'microsoft.com', 'live.com', 'office.com', 'outlook.com'
+        ];
+
+        function isNonEmbeddable(url) {
+            try {
+                const host = new URL(url).hostname.toLowerCase().replace(/^(www|m|web)\./, '');
+                return NON_EMBEDDABLE_HOSTS.some(h => host === h || host.endsWith('.' + h));
+            } catch (e) {
+                return false;
+            }
+        }
 
         // YouTube watch pages refuse to be framed; the embed form works and autoplays
         function toEmbedUrl(url) {
@@ -684,18 +1190,47 @@
                     if (u.pathname === '/watch') id = u.searchParams.get('v');
                     else if (['shorts', 'live', 'embed'].includes(parts[1])) id = parts[2];
                 }
-                if (id) return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
+                // mute=1 يجعل التشغيل التلقائي مسموحاً في كل المتصفحات، وبلا صوت يعني
+                // أن الفيديو يُبث فعلياً أثناء الدورة بدل أن يوقفه المتصفح
+                if (id) return `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&rel=0&playsinline=1&controls=1`;
             } catch (e) {}
             return url;
         }
 
-        // Blank first, then load, so the same URL is really reloaded (video restarts)
+        function showFrameBar(url, showError) {
+            currentFrameUrl = url;
+            const bar = document.getElementById('frameBar');
+            const label = document.getElementById('frameBarUrl');
+            const errorDiv = document.getElementById('iframeError');
+            if (bar) bar.classList.add('visible');
+            if (label) label.textContent = url;
+            if (errorDiv) errorDiv.style.display = showError ? 'block' : 'none';
+        }
+
+        function openCurrentInFallback() {
+            if (currentFrameUrl) loadInExternal(currentFrameUrl);
+        }
+
+        // Blank the frame, then load the link. If the frame never reports a load,
+        // surface the fallback button instead of leaving a silent white page.
         function loadInFrame(url) {
             const iframe = document.querySelector('iframe[name="playbackFrame"]');
             const token = ++frameLoadToken;
+            clearTimeout(frameFallbackTimer);
+            showFrameBar(url, false);
+            iframe.onload = function() {
+                if (token === frameTargetToken) lastFrameLoadToken = token;
+            };
             iframe.src = 'about:blank';
             setTimeout(() => {
-                if (token === frameLoadToken) iframe.src = toEmbedUrl(url);
+                if (token !== frameLoadToken) return;
+                frameTargetToken = token;
+                iframe.src = toEmbedUrl(url);
+                frameFallbackTimer = setTimeout(() => {
+                    if (token !== frameLoadToken) return;
+                    if (lastFrameLoadToken === token) return;
+                    showFrameBar(url, true);
+                }, FRAME_LOAD_GRACE_MS);
             }, 150);
         }
 
@@ -731,118 +1266,119 @@
                 document.body.appendChild(b);
             }
             b.querySelector('button').onclick = function() {
-                loadInExternal(url);
+                // داخل نقرة المستخدم: نفتح النافذة الحقيقية مباشرة في وضع المشاهدة الحقيقية
+                if (isRealMode()) openRealWindow(url); else loadInExternal(url);
             };
             b.style.display = 'flex';
         }
 
-        // ONE external tab that stays on http://localhost:8080/player (served by server.ps1).
-        // The tab never navigates away, so the browser can't detach it: every new link
-        // is sent to it with postMessage and it swaps the video inside itself.
-        const PLAYER_ORIGIN = 'http://localhost:8080';
-        const PLAYER_URL = PLAYER_ORIGIN + '/player';
-        let playerReady = false;
-        let pendingPlayerUrl = null;
+        // Links that cannot be embedded are shown in a fallback window. When a link's
+        // time is over, that window is closed and a BRAND-NEW window is opened for the
+        // next link (instead of navigating/reusing the old one).
+        const FALLBACK_WINDOW_PREFIX = 'playbackWindow_';
+        let fallbackWindowSeq = 0;
 
-        // Is start.bat's server running? Checked in the background so the tab is only
-        // opened on the player page when it will actually load.
-        let serverUp = false;
-        let serverWarned = false;
-        function probeServer() {
-            try {
-                fetch(PLAYER_ORIGIN + '/player', { mode: 'no-cors', cache: 'no-store' })
-                    .then(() => { serverUp = true; })
-                    .catch(() => { serverUp = false; });
-            } catch (e) { serverUp = false; }
-        }
-        probeServer();
-        setInterval(probeServer, 4000);
-
-        window.addEventListener('message', function(e) {
-            if (!e.data || e.data.type !== 'player-ready') return;
-            if (!playbackWindow || e.source !== playbackWindow) return;
-            playerReady = true;
-            if (pendingPlayerUrl) {
-                try { playbackWindow.postMessage({ type: 'load', url: pendingPlayerUrl }, PLAYER_ORIGIN); } catch (err) {}
-                pendingPlayerUrl = null;
-            }
-        });
-
-        function loadInPlayer(url) {
-            try {
-                if (playbackWindow && !playbackWindow.closed) {
-                    if (playerReady) {
-                        // Next link: open a fresh tab, then close the old one (no pile-up).
-                        // If the browser blocks the new tab, keep the old one and reuse it instead.
-                        const oldWin = playbackWindow;
-                        const freshWin = window.open(PLAYER_URL, 'playerTab' + Date.now(), EXT_FEATURES);
-                        if (freshWin) {
-                            playerReady = false;
-                            pendingPlayerUrl = url;
-                            playbackWindow = freshWin;
-                            try { oldWin.close(); } catch (e) {}
-                        } else {
-                            oldWin.postMessage({ type: 'load', url: url }, PLAYER_ORIGIN);
-                        }
-                    } else {
-                        pendingPlayerUrl = url;
-                        playbackWindow.location.href = PLAYER_URL;
-                    }
-                } else {
-                    playerReady = false;
-                    pendingPlayerUrl = url;
-                    playbackWindow = window.open(PLAYER_URL, 'singlePlaybackWindow', EXT_FEATURES);
-                    if (!playbackWindow) {
-                        showReopenBanner(url);
-                        return true;
-                    }
-                }
-                hideReopenBanner();
-                return true;
-            } catch (e) {
-                return false;
-            }
+        function nextFallbackWindowName() {
+            return FALLBACK_WINDOW_PREFIX + (++fallbackWindowSeq) + '_' + Date.now();
         }
 
-        // Opens (or reuses) the external window and navigates it to the URL
-        function loadInExternal(url) {
-            // YouTube: same single tab, video swapped inside the player page (needs start.bat running)
-            if (toEmbedUrl(url) !== url) {
-                if (serverUp && loadInPlayer(url)) return;
-                if (!serverUp && !serverWarned) {
-                    serverWarned = true;
-                    showToast('خادم start.bat غير شغّال، لذلك فُتح الرابط مباشرة. شغّل start.bat لتبقى نافذة واحدة.');
-                }
-            }
-
-            let navigated = false;
+        function closeFallbackWindow() {
             if (playbackWindow && !playbackWindow.closed) {
+                try { playbackWindow.close(); } catch (e) {}
+            }
+            playbackWindow = null;
+        }
+
+        // Opened inside the click (so the browser allows it) and kept ready for the first link
+        function openBlankFallbackWindow() {
+            let w = null;
+            try { w = window.open('about:blank', nextFallbackWindowName(), EXT_FEATURES); } catch (e) { w = null; }
+            if (w) playbackWindow = w;
+            return w;
+        }
+
+        // وضع المشاهدة الحقيقية: نُعيد استخدام نفس النافذة بتوجيهها للرابط الجديد.
+        // توجيه نافذة فتحها السكربت مسموح دائماً، بخلاف window.open من داخل مؤقّت
+        // (وإلا حجب المتصفح النوافذ بعد الدورة الأولى).
+        function openRealWindow(url) {
+            url = netAliasUrl(url); // عند تفعيل «تبديل الواجهة» يُفتح عبر مسار/نسخة مختلفة
+            hideReopenBanner();
+            let w = (playbackWindow && !playbackWindow.closed) ? playbackWindow : null;
+            if (!w) {
+                try { w = window.open('about:blank', nextFallbackWindowName(), EXT_FEATURES); } catch (e) { w = null; }
+                if (!w) { showReopenBanner(url); return false; }
+                playbackWindow = w;
+            }
+            try {
+                w.location.replace(url);
+            } catch (e) {
+                try { w.location.href = url; } catch (e2) { showReopenBanner(url); return false; }
+            }
+            try { w.focus(); } catch (e) {}
+            return true;
+        }
+
+        // Opens a NEW window for this link, then closes the window of the previous link
+        function loadInExternal(url) {
+            hideReopenBanner();
+            const oldWin = (playbackWindow && !playbackWindow.closed) ? playbackWindow : null;
+
+            let fresh = null;
+            try { fresh = window.open(url, nextFallbackWindowName(), EXT_FEATURES); } catch (e) { fresh = null; }
+
+            if (fresh) {
+                playbackWindow = fresh;
+                if (oldWin) { try { oldWin.close(); } catch (e) {} }
+                try { fresh.focus(); } catch (e) {}
+                return true;
+            }
+
+            // Popup blocked (usually because an auto-play timer fired):
+            // keep the current window usable instead of leaving a blank page.
+            if (oldWin) {
                 try {
-                    playbackWindow.location.href = url;
-                    playerReady = false;
-                    navigated = true;
+                    oldWin.location.href = url;
+                    playbackWindow = oldWin;
+                    try { oldWin.focus(); } catch (e) {}
+                    return true;
                 } catch (e) {}
             }
-            if (!navigated) {
-                if (playbackWindow) { try { playbackWindow.close(); } catch (e) {} }
-                playbackWindow = window.open(url, 'singlePlaybackWindow', EXT_FEATURES);
-                if (!playbackWindow) {
-                    showReopenBanner(url);
-                    return;
-                }
-            }
-            hideReopenBanner();
-            try { playbackWindow.focus(); } catch (e) {}
+
+            showReopenBanner(url);
+            return false;
         }
 
-        // Uses the external window if the link's checkbox is ticked, otherwise the iframe
+        // Player is always the shared white iframe. The fallback window is used only when
+        // the site blocks embedding or the link's checkbox forces it.
         function openLink(url, item) {
-            const isYouTube = toEmbedUrl(url) !== url;
-            const localFile = location.protocol === 'file:';
-            if (item.querySelector('.link-external').checked || (isYouTube && localFile)) {
-                loadInExternal(url);
+            const check = item ? item.querySelector('.link-external') : null;
+            const forceFallback = !!(check && check.checked);
+
+            // وضع المشاهدة الحقيقية: لا إطار صامت — نفتح رابط المنصة الأصلي بصوت في نافذة ظاهرة
+            if (isRealMode()) {
+                clearTimeout(frameFallbackTimer);
+                ++frameLoadToken;
+                const frame = document.querySelector('iframe[name="playbackFrame"]');
+                if (frame) {
+                    frame.srcdoc = '<!DOCTYPE html><html dir="rtl"><body style="margin:0;height:100vh;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;background:#0f1419;color:#2ecc71;font-family:Tahoma,Arial,sans-serif;font-size:18px;text-align:center;padding:20px">🔊 وضع المشاهدة الحقيقية مفعّل<span style="color:#95a5a6;font-size:14px">الفيديو يعمل الآن في نافذة ظاهرة بالصوت — لا تُغلقها</span></body></html>';
+                }
+                showFrameBar(url, false);
+                return openRealWindow(url);
+            }
+
+            if (forceFallback || isNonEmbeddable(url)) {
+                clearTimeout(frameFallbackTimer);
+                ++frameLoadToken;
+                const iframe = document.querySelector('iframe[name="playbackFrame"]');
+                if (iframe) iframe.src = 'about:blank';
+                showFrameBar(url, false);
+                // false = المتصفح منع فتح النافذة، فلا تُحتسب مشاهدة غير حقيقية
+                return loadInExternal(url);
             } else {
+                // The previous link's time is over: release its fallback window.
+                closeFallbackWindow();
                 loadInFrame(url);
+                return true;
             }
         }
 
@@ -859,18 +1395,35 @@
             ) || 10;
         }
 
+        // وضع المشاهدة الحقيقية: رابط المنصة الأصلي بصوت في نافذة ظاهرة
+        function isRealMode() {
+            const el = document.getElementById('realMode');
+            return !!(el && el.checked);
+        }
+
+        function getRealMinSeconds() {
+            const el = document.getElementById('realMinSeconds');
+            const v = el ? Math.round(parseFloat(el.value)) : 30;
+            return (!isNaN(v) && v > 0) ? v : 30;
+        }
+
+        // في الوضع الحقيقي لا تقل مدة أي رابط عن الحد الأدنى (المنصات تحتسب بعد وقت مشاهدة فعلي)
+        function applyRealMin(secs) {
+            return isRealMode() ? Math.max(secs, getRealMinSeconds()) : secs;
+        }
+
         // Per-link duration; falls back to the default interval when empty
         function getItemSeconds(item) {
             const own = toSeconds(
                 item.querySelector('.link-interval').value,
                 item.querySelector('.link-unit').value
             );
-            if (own) return own;
+            if (own) return applyRealMin(own);
             if (document.getElementById('randomMode').checked) {
                 const r = pickRandomSeconds();
-                if (r) return r;
+                if (r) return applyRealMin(r);
             }
-            return getGlobalSeconds();
+            return applyRealMin(getGlobalSeconds());
         }
 
         // Picks one of the five user-defined options at random
@@ -899,7 +1452,9 @@
                     unit: document.getElementById('intervalUnit').value,
                     repeat: document.getElementById('repeatCount').value,
                     random: document.getElementById('randomMode').checked,
-                    randomOpts: Array.from(document.querySelectorAll('.random-opt')).map(i => i.value)
+                    randomOpts: Array.from(document.querySelectorAll('.random-opt')).map(i => i.value),
+                    realMode: isRealMode(),
+                    realMin: getRealMinSeconds()
                 }));
             } catch (e) {}
         }
@@ -912,6 +1467,10 @@
                 document.getElementById('intervalUnit').value = s.unit || 's';
                 document.getElementById('repeatCount').value = s.repeat || 0;
                 document.getElementById('randomMode').checked = !!s.random;
+                const realEl = document.getElementById('realMode');
+                if (realEl) realEl.checked = !!s.realMode;
+                const realMinEl = document.getElementById('realMinSeconds');
+                if (realMinEl && s.realMin) realMinEl.value = s.realMin;
                 if (Array.isArray(s.randomOpts)) {
                     document.querySelectorAll('.random-opt').forEach((input, i) => {
                         if (s.randomOpts[i]) input.value = s.randomOpts[i];
@@ -943,6 +1502,7 @@
                 }
             });
             isLoading = false;
+            refreshViewsTotal();
         }
 
         function saveBookmarks() {
@@ -951,9 +1511,9 @@
             document.querySelectorAll('.bookmark-item').forEach(item => {
                 const url = item.getAttribute('data-url');
                 const viewsSpan = item.querySelector('.bookmark-views');
-                bookmarks.push({ 
+                bookmarks.push({
                     url: url,
-                    views: parseInt(viewsSpan.getAttribute('data-views')) || 0,
+                    views: parseInt(viewsSpan.getAttribute('data-views'), 10) || 0,
                     excluded: item.classList.contains('excluded'),
                     interval: item.querySelector('.link-interval').value,
                     unit: item.querySelector('.link-unit').value,
@@ -961,25 +1521,76 @@
                     external: item.querySelector('.link-external').checked,
                     postponeUntil: parseInt(item.getAttribute('data-postpone-until')) || 0,
                     title: item.getAttribute('data-title') || '',
-                    titleTried: item.getAttribute('data-title-tried') === '1'
+                    titleTried: item.getAttribute('data-title-tried') === '1',
+                    lastViewAt: parseInt(item.getAttribute('data-last-view-at'), 10) || 0
                 });
             });
             localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
         }
 
-        function incrementViews(url) {
-            const bookmarkItems = document.querySelectorAll('.bookmark-item');
-            bookmarkItems.forEach(item => {
-                const a = item.querySelector('a');
-                if (a.href === url) {
-                    const viewsSpan = item.querySelector('.bookmark-views');
-                    const currentViews = parseInt(viewsSpan.getAttribute('data-views')) || 0;
-                    const newViews = currentViews + 1;
-                    viewsSpan.setAttribute('data-views', newViews);
-                    viewsSpan.textContent = `${newViews} مشاهدة`;
-                    saveBookmarks();
-                }
+        // إجمالي المشاهدات لكل الروابط (يتحدّث أمام المستخدم باستمرار)
+        function refreshViewsTotal() {
+            let total = 0;
+            document.querySelectorAll('.bookmark-item .bookmark-views').forEach(function (span) {
+                total += parseInt(span.getAttribute('data-views'), 10) || 0;
             });
+            const el = document.getElementById('viewsTotalCount');
+            if (el) el.textContent = total.toLocaleString('en-US');
+            return total;
+        }
+
+        let viewsToastTimer = null;
+        function showViewsToast(amount) {
+            let toast = document.getElementById('viewsToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'viewsToast';
+                toast.className = 'views-toast';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = '✅ +' + amount + ' مشاهدة';
+            toast.classList.add('show');
+            clearTimeout(viewsToastTimer);
+            viewsToastTimer = setTimeout(function () { toast.classList.remove('show'); }, 1600);
+        }
+
+        // زيادة عدد المشاهدات: تُطابق كل أشكال الرابط نفسه، وتعمل بالعنصر مباشرة عند الحاجة
+        function incrementViews(url, amount, directItem) {
+            amount = Math.max(1, parseInt(amount, 10) || 1);
+            const target = normalizeUrl(url);
+            const items = directItem ? [directItem] : Array.from(document.querySelectorAll('.bookmark-item'));
+            let changed = false;
+
+            items.forEach(function (item) {
+                if (!item) return;
+                const link = item.querySelector('a');
+                const itemUrl = normalizeUrl(item.getAttribute('data-url') || (link ? link.href : ''));
+                if (!directItem && itemUrl !== target && normalizeUrl(link ? link.href : '') !== target) return;
+
+                const viewsSpan = item.querySelector('.bookmark-views');
+                if (!viewsSpan) return;
+
+                const currentViews = parseInt(viewsSpan.getAttribute('data-views'), 10) || 0;
+                const newViews = currentViews + amount;
+                viewsSpan.setAttribute('data-views', String(newViews));
+                viewsSpan.textContent = newViews.toLocaleString('en-US') + ' مشاهدة';
+                viewsSpan.title = 'آخر مشاهدة: ' + new Date().toLocaleTimeString('ar-EG');
+                viewsSpan.classList.remove('views-bump');
+                void viewsSpan.offsetWidth; // إعادة تشغيل حركة النبض
+                viewsSpan.classList.add('views-bump');
+                item.setAttribute('data-last-view-at', String(Date.now()));
+                changed = true;
+            });
+
+            if (changed) {
+                saveBookmarks();
+                refreshViewsTotal();
+                showViewsToast(amount);
+            }
+
+            // كل مشاهدة تُحتسب على طلب المشاهدات المطابق لنفس الرابط
+            fulfillOrdersFor(target);
+            return changed;
         }
 
         function addBookmarkToList(url, number, views = 0, settings = {}) {
@@ -1045,7 +1656,8 @@
             a.onclick = function(e) {
                 e.preventDefault();
                 loadInFrame(url);
-                incrementViews(url);
+                // فتح يدوي للرابط = مشاهدة واحدة تُضاف فوراً حتى يتغيّر العداد أمام المستخدم
+                incrementViews(url, 1, li);
             };
             const urlObj = new URL(url);
             a.textContent = settings.title || urlObj.hostname;
@@ -1062,10 +1674,15 @@
             statsContainer.className = 'bookmark-stats';
             
             // Add views counter
+            const initialViews = Math.max(0, parseInt(views, 10) || 0);
             const viewsSpan = document.createElement('span');
             viewsSpan.className = 'bookmark-views';
-            viewsSpan.setAttribute('data-views', views);
-            viewsSpan.textContent = `${views} مشاهدة`;
+            viewsSpan.setAttribute('data-views', String(initialViews));
+            viewsSpan.textContent = initialViews.toLocaleString('en-US') + ' مشاهدة';
+            if (settings.lastViewAt) {
+                viewsSpan.title = 'آخر مشاهدة: ' + new Date(settings.lastViewAt).toLocaleString('ar-EG');
+                li.setAttribute('data-last-view-at', String(settings.lastViewAt));
+            }
             statsContainer.appendChild(viewsSpan);
 
             // Postpone: don't auto-play this link for N days (1 = today only)
@@ -1181,14 +1798,14 @@
             // Auto external window checkbox
             const extLabel = document.createElement('label');
             extLabel.className = 'auto-external';
-            extLabel.title = 'عند التشغيل يُفتح الرابط في نافذة خارجية بدلاً من الإطار';
+            extLabel.title = 'فتح هذا الرابط دائماً في النافذة الاحتياطية بدلاً من الإطار (نافذة جديدة لكل رابط)';
             const extCheck = document.createElement('input');
             extCheck.type = 'checkbox';
             extCheck.className = 'link-external';
             extCheck.checked = !!settings.external;
             extCheck.onchange = restartIfPlaying;
             extLabel.appendChild(extCheck);
-            extLabel.appendChild(document.createTextNode(' نافذة خارجية تلقائياً'));
+            extLabel.appendChild(document.createTextNode(' نافذة احتياطية دائماً'));
             actions.appendChild(extLabel);
             
             // Add external button
@@ -1197,7 +1814,8 @@
             externalButton.textContent = 'فتح في نافذة خارجية';
             externalButton.onclick = function() {
                 window.open(url, '_blank');
-                incrementViews(url);
+                // فتح يدوي في نافذة خارجية = مشاهدة واحدة
+                incrementViews(url, 1, li);
             };
             actions.appendChild(externalButton);
             
@@ -1317,13 +1935,30 @@
             return null;
         }
 
+        // توحيد شكل الرابط حتى تُطابق كل صيغه بعضها:
+        // youtu.be/ID = youtube.com/watch?v=ID = shorts/ID، مع تجاهل الشرطة النهائية و#hash
         function normalizeUrl(url) {
             try {
-                const urlObj = new URL(url);
-                // Remove trailing slash and normalize protocol
-                return urlObj.origin + urlObj.pathname.replace(/\/$/, '') + urlObj.search;
+                const u = new URL(String(url || '').trim());
+                const host = u.hostname.toLowerCase().replace(/^(www|m|web)\./, '');
+
+                if (host === 'youtu.be' || host === 'youtube.com' || host === 'youtube-nocookie.com') {
+                    let id = '';
+                    if (host === 'youtu.be') {
+                        id = u.pathname.split('/').filter(Boolean)[0] || '';
+                    } else if (u.pathname === '/watch') {
+                        id = u.searchParams.get('v') || '';
+                    } else {
+                        const parts = u.pathname.split('/').filter(Boolean);
+                        if (['shorts', 'live', 'embed', 'v'].indexOf(parts[0]) !== -1) id = parts[1] || '';
+                    }
+                    if (id) return 'https://www.youtube.com/watch?v=' + id;
+                }
+
+                const path = u.pathname.replace(/\/+$/, '');
+                return u.origin.toLowerCase() + path + u.search;
             } catch (e) {
-                return url;
+                return String(url || '').trim();
             }
         }
 
@@ -1479,6 +2114,7 @@
                 if (repeatCount > 0) {
                     status += ` | التكرار ${currentIteration + 1}/${repeatCount}`;
                 }
+                if (isRealMode()) status += ' | 🔊 مشاهدة حقيقية';
                 
                 // Create status span if it doesn't exist
                 if (!statusText.querySelector('.status-text')) {
@@ -1540,12 +2176,21 @@
             currentItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             const currentUrl = currentItem.getAttribute('data-url');
-            
-            openLink(currentUrl, currentItem);
-            incrementViews(currentItem.querySelector('a').href);
 
             // Each link has its own duration
             const seconds = getItemSeconds(currentItem);
+
+            // فتح الرابط ثم احتساب مشاهدة واحدة بعد أن يثبت أنه يعمل فعلياً
+            const opened = openLink(currentUrl, currentItem);
+            const verifyToken = ++viewVerifyToken;
+            const graceSec = Math.min(15, Math.max(0.5, seconds * 0.4));
+            setTimeout(function () {
+                if (!playbackActive || verifyToken !== viewVerifyToken) return;
+                if (opened === false) return;
+                if (!currentItem.classList.contains('playing')) return;
+                incrementViews(currentUrl, 1, currentItem);
+            }, graceSec * 1000);
+
             countdownEnd = Date.now() + seconds * 1000;
             updateCountdown();
             countdownInterval = setInterval(updateCountdown, 500);
@@ -1570,6 +2215,10 @@
             if (remainingSeconds <= 0) {
                 clearInterval(countdownInterval);
                 countdownInterval = null;
+                // المشاهدة احتُسبت أثناء التشغيل الفعلي (في playNext)؛ هنا ننتقل للرابط التالي فقط
+                viewVerifyToken++; // إلغاء أي عدّ معلّق قبل الانتقال
+                // Link time is over. في الوضع الحقيقي نُبقي النافذة ونوجّهها للرابط التالي
+                if (!isRealMode()) closeFallbackWindow();
                 playNext();
             }
         }
@@ -1583,8 +2232,9 @@
             });
             
             clearInterval(countdownInterval);
-            
+
             playbackActive = false;
+            viewVerifyToken++; // منع أي عدّ مشاهدة معلّق بعد الإيقاف
             hideReopenBanner();
             countdownInterval = null;
             currentIndex = 0;
@@ -1617,16 +2267,18 @@
             currentIteration = 0;
             playbackActive = true;
             
-            // Open the external window right now (inside the click) if any link needs it
+            // If the first queued link needs the fallback window, open it inside this
+            // click so the browser does not block it when the timer fires later.
             const playable = Array.from(document.querySelectorAll('.bookmark-item'))
                 .filter(item => !isSkipped(item));
-            const needsExternal = playable.length > 0
-                && !playable[0].querySelector('.link-external').checked
-                && playable.some(item => item.querySelector('.link-external').checked);
-            if (needsExternal && (!playbackWindow || playbackWindow.closed)) {
-                playbackWindow = window.open('about:blank', 'singlePlaybackWindow', EXT_FEATURES);
-                if (!playbackWindow) {
-                    showToast('المتصفح منع فتح النافذة الخارجية. اسمح بالنوافذ المنبثقة لهذه الصفحة.');
+            const firstItem = playable[0];
+            const firstNeedsFallback = isRealMode() || (!!firstItem && (
+                firstItem.querySelector('.link-external').checked ||
+                isNonEmbeddable(firstItem.getAttribute('data-url'))
+            ));
+            if (firstNeedsFallback && (!playbackWindow || playbackWindow.closed)) {
+                if (!openBlankFallbackWindow()) {
+                    showToast('المتصفح منع فتح النافذة الاحتياطية. اسمح بالنوافذ المنبثقة لهذه الصفحة.');
                 }
             }
             
@@ -1655,9 +2307,21 @@
             playButton.textContent = 'إيقاف';
             playButton.classList.add('playing');
             
-            openLink(url, bookmarkItem);
-            incrementViews(url);
-            
+            // عدّاد المشاهدة لهذه الدورة: يُحتسب بعد تأكيد التشغيل الفعلي وليس عند مجرد البدء
+            let runVerifyToken = 0;
+            function countViewSoon(opened) {
+                const token = ++runVerifyToken;
+                const graceSec = Math.min(15, Math.max(0.5, intervalSeconds * 0.4));
+                setTimeout(function () {
+                    if (bookmarkItem._runId !== runId) return;      // أُوقفت الدورة أو بدأت دورة أخرى
+                    if (token !== runVerifyToken) return;            // بدأت دورة تشغيل جديدة
+                    if (bookmarkItem.getAttribute('data-playing') !== 'true') return;
+                    if (opened === false) return;                    // فشل فتح النافذة البديلة
+                    incrementViews(url, 1, bookmarkItem);
+                }, graceSec * 1000);
+            }
+            countViewSoon(openLink(url, bookmarkItem));
+
             let endTime = Date.now() + intervalSeconds * 1000;
             
             function updateTimer() {
@@ -1672,7 +2336,9 @@
                 
                 if (timeLeft <= 0) {
                     currentIteration++;
+                    // المشاهدة احتُسبت أثناء التشغيل الفعلي في countViewSoon؛ هنا ننتقل للدورة التالية
                     if (repeatCount > 0 && currentIteration >= repeatCount) {
+                        runVerifyToken++; // إلغاء أي عدّ معلّق قبل الإنهاء
                         if (externalWindow) {
                             externalWindow.close();
                         }
@@ -1680,18 +2346,20 @@
                         return;
                     }
                     
+                    // Link time is over. في الوضع الحقيقي نُبقي النافذة ونوجّهها للرابط التالي
+                    if (!isRealMode()) closeFallbackWindow();
                     // Reset timer and reload URL
                     intervalSeconds = getItemSeconds(bookmarkItem);
                     endTime = Date.now() + intervalSeconds * 1000;
                     timeLeft = intervalSeconds;
-                    openLink(url, bookmarkItem);
-                    incrementViews(url);
+                    countViewSoon(openLink(url, bookmarkItem));
                 }
                 
                 let status = formatTime(timeLeft);
                 if (repeatCount > 0) {
                     status += ` | ${currentIteration + 1}/${repeatCount}`;
                 }
+                if (isRealMode()) status += ' | 🔊';
                 timer.textContent = status;
                 
                 setTimeout(updateTimer, 500);
@@ -1882,9 +2550,1618 @@
         });
         document.getElementById('randomMode').addEventListener('change', saveSettings);
         document.querySelectorAll('.random-opt').forEach(i => i.addEventListener('change', saveSettings));
+        document.getElementById('realMode').addEventListener('change', function () {
+            saveSettings();
+            showToast(isRealMode()
+                ? '🔊 وضع المشاهدة الحقيقية مفعّل — تُفتح الروابط بصوت في نافذة ظاهرة'
+                : 'وضع المشاهدة الحقيقية متوقف — العودة للإطار الصامت');
+        });
+        document.getElementById('realMinSeconds').addEventListener('change', saveSettings);
 
         // Re-check postponed links every minute (a link comes back automatically on its date)
         setInterval(refreshPostponed, 60000);
+
+        // ============ لوحة الخدمات: حسابات ومحفظة وطلبات وإيداعات ============
+        // كل البيانات محفوظة في المتصفح ثم تُزامَن تلقائياً مع Supabase عبر رمز المزامنة.
+        const SMM_STATE_KEY = 'smm_state';
+        const SMM_SESSION_KEY = 'smm_session';
+
+        const DEFAULT_SERVICES = [
+            { id: 'yt_views', name: 'مشاهدات يوتيوب', icon: '▶️', price: 5, unit: 1000, min: 100, max: 100000, seconds: 30 },
+            { id: 'ig_reels', name: 'مشاهدات ريلز إنستغرام', icon: '📷', price: 4, unit: 1000, min: 100, max: 50000, seconds: 25 },
+            { id: 'tt_views', name: 'مشاهدات تيك توك', icon: '🎵', price: 3, unit: 1000, min: 100, max: 50000, seconds: 25 },
+            { id: 'x_views', name: 'مشاهدات منشور X', icon: '✖️', price: 6, unit: 1000, min: 100, max: 30000, seconds: 30 },
+            { id: 'fb_views', name: 'مشاهدات فيسبوك', icon: '👍', price: 5, unit: 1000, min: 100, max: 30000, seconds: 30 },
+            { id: 'tg_views', name: 'مشاهدات تلجرام', icon: '✈️', price: 2, unit: 1000, min: 100, max: 20000, seconds: 20 }
+        ];
+
+        const SMM_STATUS = {
+            pending: { label: 'قيد التنفيذ', cls: 'pending' },
+            completed: { label: 'مكتمل', cls: 'done' },
+            canceled: { label: 'ملغي', cls: 'canceled' },
+            rejected: { label: 'مرفوض', cls: 'canceled' }
+        };
+        const DEP_STATUS = {
+            pending: { label: 'بانتظار المراجعة', cls: 'pending' },
+            approved: { label: 'معتمد', cls: 'done' },
+            rejected: { label: 'مرفوض', cls: 'canceled' }
+        };
+
+        let smmState = null;
+        let smmAccount = null;
+
+        function smmNewState() {
+            return {
+                accounts: [],
+                orders: [],
+                deposits: [],
+                services: DEFAULT_SERVICES.map(function (s) { return Object.assign({}, s); }),
+                updatedAt: 0
+            };
+        }
+
+        function smmNormalize(st) {
+            const base = smmNewState();
+            if (!st || typeof st !== 'object') return base;
+            const out = {
+                accounts: Array.isArray(st.accounts) ? st.accounts.filter(function (a) { return a && a.id && a.user; }) : [],
+                orders: Array.isArray(st.orders) ? st.orders.filter(function (o) { return o && o.id; }) : [],
+                deposits: Array.isArray(st.deposits) ? st.deposits.filter(function (d) { return d && d.id; }) : [],
+                services: Array.isArray(st.services) && st.services.length ? st.services : base.services,
+                updatedAt: Number(st.updatedAt) || 0
+            };
+            out.accounts.forEach(function (a) {
+                a.balance = Number(a.balance) || 0;
+                a.role = a.role === 'admin' ? 'admin' : 'user';
+            });
+            out.orders.forEach(function (o) {
+                o.qty = Number(o.qty) || 0;
+                o.cost = Number(o.cost) || 0;
+                o.done = Number(o.done) || 0;
+                if (!SMM_STATUS[o.status]) o.status = 'pending';
+                // إصلاح أي طلب «مكتمل» لم تُسلَّم كميته كاملة → يعود قيد التنفيذ
+                if (o.status === 'completed' && o.qty > 0 && o.done < o.qty) o.status = 'pending';
+                // وصل التسليم للكمية كاملة → مكتمل تلقائياً
+                if (o.status === 'pending' && o.qty > 0 && o.done >= o.qty) o.status = 'completed';
+            });
+            out.deposits.forEach(function (d) {
+                d.amount = Number(d.amount) || 0;
+                if (!DEP_STATUS[d.status]) d.status = 'pending';
+            });
+            return out;
+        }
+
+        function smmLoad() {
+            let raw = null;
+            try { raw = JSON.parse(localStorage.getItem(SMM_STATE_KEY) || 'null'); } catch (e) { raw = null; }
+            smmState = smmNormalize(raw);
+            smmRefresh();
+            renderEverything();
+        }
+
+        function smmRefresh() {
+            const sid = localStorage.getItem(SMM_SESSION_KEY) || '';
+            smmAccount = smmState.accounts.find(function (a) { return a.id === sid; }) || null;
+            if (!smmAccount) localStorage.removeItem(SMM_SESSION_KEY);
+        }
+
+        function smmSave() {
+            if (!smmState) return;
+            smmState.updatedAt = Date.now();
+            localStorage.setItem(SMM_STATE_KEY, JSON.stringify(smmState));
+            renderEverything();
+            smmRequestSync();
+        }
+
+        function smmRequestSync() {
+            if (typeof sbReady !== 'function' || typeof sbSync !== 'function') return;
+            if (!sbReady()) return;
+            clearTimeout(smmRequestSync._t);
+            smmRequestSync._t = setTimeout(function () { sbSync().catch(function () {}); }, 900);
+        }
+
+        function smmRemotePayload() {
+            return { smm: smmState || null, smmAt: smmState ? (smmState.updatedAt || 0) : 0 };
+        }
+
+        function smmApplyRemote(remoteSmm, remoteAt, force) {
+            if (!remoteSmm) return false;
+            const localAt = (smmState && smmState.updatedAt) || 0;
+            // force: عند البحث عن حساب مستخدم في السحابة تكون الحالة السحابية هي المرجع
+            if (!force && remoteAt <= localAt) return false;
+            smmState = smmNormalize(remoteSmm);
+            localStorage.setItem(SMM_STATE_KEY, JSON.stringify(smmState));
+            smmRefresh();
+            renderEverything();
+            return true;
+        }
+
+        function smmMsg(elId, text, color) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.textContent = text || '';
+            el.style.color = color || '#95a5a6';
+            clearTimeout(smmMsg['_t' + elId]);
+            smmMsg['_t' + elId] = setTimeout(function () { el.textContent = ''; }, 7000);
+        }
+
+        function fmtPts(n) { return Number(n || 0).toLocaleString('en-US'); }
+        function fmtDate(ts) { try { return new Date(ts).toLocaleString('ar-EG'); } catch (e) { return ''; } }
+
+        function renderEverything() {
+            renderAccount();
+            renderServices();
+            renderOrderOptions();
+            renderOrders();
+            renderDeposits();
+            renderAdmin();
+            if (typeof provRender === 'function') provRender();
+            if (typeof exUi === 'function') exUi();
+        }
+
+        // ---------- الحساب ----------
+        function renderAccount() {
+            const logged = !!smmAccount;
+            const form = document.getElementById('authForm');
+            const box = document.getElementById('accountBox');
+            const state = document.getElementById('accountState');
+            const userEl = document.getElementById('accountUser');
+            const roleEl = document.getElementById('accountRole');
+            const wallet = document.getElementById('walletPoints');
+            if (form) form.style.display = logged ? 'none' : '';
+            if (box) box.style.display = logged ? '' : 'none';
+            if (state) state.textContent = logged ? 'مسجل الدخول' : 'غير مسجل الدخول';
+            if (userEl) userEl.textContent = logged ? smmAccount.user : '';
+            if (roleEl) {
+                roleEl.textContent = logged ? (smmAccount.role === 'admin' ? 'مدير' : 'مستخدم') : '';
+                roleEl.className = 'role-chip' + (logged && smmAccount.role === 'admin' ? ' admin' : '');
+            }
+            if (wallet) wallet.textContent = logged ? fmtPts(smmAccount.balance) : '0';
+        }
+
+        async function smmHash(text) {
+            const input = 'smm::' + text;
+            if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+                try {
+                    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(input));
+                    return Array.from(new Uint8Array(buf)).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+                } catch (e) {}
+            }
+            let h = 5381;
+            for (let i = 0; i < input.length; i++) h = ((h * 33) ^ input.charCodeAt(i)) >>> 0;
+            return 'f' + h.toString(16);
+        }
+
+        function smmSetSession(acc) {
+            smmAccount = acc;
+            localStorage.setItem(SMM_SESSION_KEY, acc.id);
+            renderEverything();
+        }
+
+        async function smmSignup() {
+            const uEl = document.getElementById('authUser');
+            const pEl = document.getElementById('authPass');
+            const user = (uEl ? uEl.value : '').trim().toLowerCase();
+            const pass = pEl ? pEl.value : '';
+            if (!/^[a-z0-9_.-]{3,24}$/.test(user)) { smmMsg('authMsg', 'اسم المستخدم: 3 إلى 24 حرفاً لاتينياً أو أرقاماً', '#e74c3c'); return; }
+            if (pass.length < 6) { smmMsg('authMsg', 'كلمة المرور 6 أحرف على الأقل', '#e74c3c'); return; }
+            if (smmState.accounts.some(function (a) { return a.user === user; })) { smmMsg('authMsg', 'اسم المستخدم مستخدم مسبقاً', '#e74c3c'); return; }
+
+            // قبل إنشاء حساب جديد: تأكد أنه غير موجود في السحابة (متصفح آخر) لمنع تكرار الحسابات
+            if (sbCfg().key) {
+                smmMsg('authMsg', 'جارٍ فحص السحابة قبل إنشاء الحساب...', '#f39c12');
+                let pulled = false;
+                try { pulled = await sbPullForUser(user); } catch (e) {}
+                if (pulled) {
+                    smmMsg('authMsg', 'هذا الحساب موجود في السحابة — استخدم «تسجيل الدخول» بنفس كلمة المرور', '#f39c12');
+                    return;
+                }
+            }
+            // تفعيل المزامنة تلقائياً برمز مشتق من الاسم (إن كان المفتاح محفوظاً بلا رمز)
+            sbAutoEnable(user);
+
+            const hash = await smmHash(pass);
+            const isFirst = smmState.accounts.length === 0;
+            const acc = {
+                id: 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+                user: user,
+                hash: hash,
+                role: isFirst ? 'admin' : 'user',
+                balance: isFirst ? 1000 : 0,
+                createdAt: Date.now()
+            };
+            smmState.accounts.push(acc);
+            smmSave();
+            smmSetSession(acc);
+            if (pEl) pEl.value = '';
+            smmMsg('authMsg', isFirst ? 'تم إنشاء الحساب كمدير وبرصيد 1000 نقطة بداية' : 'تم إنشاء الحساب بنجاح', '#2ecc71');
+        }
+
+        async function smmLogin() {
+            const uEl = document.getElementById('authUser');
+            const pEl = document.getElementById('authPass');
+            const user = (uEl ? uEl.value : '').trim().toLowerCase();
+            const pass = pEl ? pEl.value : '';
+            if (!user) { smmMsg('authMsg', 'أدخل اسم المستخدم', '#e74c3c'); return; }
+            let acc = smmState.accounts.find(function (a) { return a.user === user; });
+
+            // الحساب غير موجود محلياً؟ اسحبه من السحابة أولاً (متصفح آخر / نافذة خفي)
+            if (!acc) {
+                if (!sbCfg().key) {
+                    smmMsg('authMsg', 'لا يوجد حساب بهذا الاسم هنا — فعّل المزامنة أو افتح «🔗 رابط النقل» من المتصفح الذي يعمل', '#e74c3c');
+                    return;
+                }
+                smmMsg('authMsg', 'جارٍ البحث عن الحساب في السحابة...', '#f39c12');
+                try { await sbPullForUser(user); } catch (e) {}
+                acc = smmState.accounts.find(function (a) { return a.user === user; });
+            }
+
+            if (!acc) {
+                smmMsg('authMsg', 'لا يوجد حساب بهذا الاسم في هذا المتصفح ولا في السحابة — تأكد من رمز المزامنة', '#e74c3c');
+                return;
+            }
+            const hash = await smmHash(pass);
+            if (hash !== acc.hash) { smmMsg('authMsg', 'كلمة المرور غير صحيحة', '#e74c3c'); return; }
+            if (pEl) pEl.value = '';
+            smmSetSession(acc);
+            smmMsg('authMsg', 'مرحباً ' + acc.user, '#2ecc71');
+            // بعد الدخول: اسحب أحدث الرابط/المشاهدات إن كانت المزامنة جاهزة
+            if (sbAutoEnable(user)) { sbStatus('جارٍ المزامنة...'); sbSyncNow(); }
+        }
+
+        function smmLogout() {
+            smmAccount = null;
+            localStorage.removeItem(SMM_SESSION_KEY);
+            renderEverything();
+        }
+
+        function smmNeedLogin() {
+            if (smmAccount) return true;
+            smmMsg('authMsg', 'يجب تسجيل الدخول أولاً', '#f39c12');
+            const sec = document.getElementById('accountSection');
+            if (sec && sec.scrollIntoView) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        function smmIsAdmin() { return !!smmAccount && smmAccount.role === 'admin'; }
+
+        // ---------- الخدمات ----------
+        function smmService(id) {
+            return smmState.services.find(function (s) { return s.id === id; }) || null;
+        }
+
+        function smmCost(svc, qty) {
+            if (!svc || !qty) return 0;
+            return Math.max(1, Math.ceil((qty / svc.unit) * svc.price));
+        }
+
+        function renderServices() {
+            const grid = document.getElementById('servicesGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            smmState.services.forEach(function (svc) {
+                const card = document.createElement('div');
+                card.className = 'service-card';
+                const icon = document.createElement('div'); icon.className = 'svc-icon'; icon.textContent = svc.icon || '⭐';
+                const name = document.createElement('div'); name.className = 'svc-name'; name.textContent = svc.name;
+                const price = document.createElement('div'); price.className = 'svc-price'; price.textContent = fmtPts(svc.price) + ' نقطة لكل ' + fmtPts(svc.unit);
+                const range = document.createElement('div'); range.className = 'svc-range'; range.textContent = 'من ' + fmtPts(svc.min) + ' إلى ' + fmtPts(svc.max) + ' — دورة ' + fmtPts(svc.seconds) + ' ثانية';
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'اطلب هذه الخدمة';
+                btn.onclick = function () { selectService(svc.id); };
+                card.appendChild(icon); card.appendChild(name); card.appendChild(price); card.appendChild(range); card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        function selectService(id) {
+            const sel = document.getElementById('orderService');
+            if (sel) { sel.value = id; updateOrderCost(); }
+            const box = document.querySelector('.order-box');
+            if (box && box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            const link = document.getElementById('orderLink');
+            if (link) link.focus();
+        }
+
+        function renderOrderOptions() {
+            const sel = document.getElementById('orderService');
+            if (!sel) return;
+            const prev = sel.value;
+            sel.innerHTML = '';
+            smmState.services.forEach(function (svc) {
+                const o = document.createElement('option');
+                o.value = svc.id;
+                o.textContent = (svc.icon || '') + ' ' + svc.name;
+                sel.appendChild(o);
+            });
+            if (prev && smmState.services.some(function (s) { return s.id === prev; })) sel.value = prev;
+            const qty = document.getElementById('orderQty');
+            const svc = smmService(sel.value);
+            if (qty && svc) { qty.min = svc.min; qty.max = svc.max; }
+            updateOrderCost();
+        }
+
+        function updateOrderCost() {
+            const sel = document.getElementById('orderService');
+            const qtyEl = document.getElementById('orderQty');
+            const svc = sel ? smmService(sel.value) : null;
+            const qty = qtyEl ? Math.round(parseFloat(qtyEl.value) || 0) : 0;
+            const costEl = document.getElementById('orderCost');
+            const hint = document.getElementById('orderHint');
+            if (costEl) costEl.textContent = fmtPts(svc ? smmCost(svc, qty) : 0);
+            if (hint && svc) {
+                const pid = provMapped(svc.id);
+                hint.textContent = 'الحد الأدنى ' + fmtPts(svc.min) + ' والأقصى ' + fmtPts(svc.max) + ' — السعر ' + fmtPts(svc.price) + ' نقطة لكل ' + fmtPts(svc.unit) +
+                    (pid ? ' — ✅ مربوط بخدمة المزوّد #' + pid + ' وسيُسلَّم الطلب فعلياً على الرابط.' : ' — ⚠️ غير مربوط بمزوّد: سيُحتسب داخلياً فقط (لن يتغيّر عدّاد المنصة).');
+            }
+        }
+
+        // ===== مزوّد الخدمات الحقيقي (SMM Provider API) =====
+        // يرسل الطلب إلى لوحة مزوّد خارجية (مثل smmflare) وهي التي تُسلّم المشاهدات فعلياً على الرابط.
+        // المفتاح يُخزَّن في هذا المتصفح فقط ولا يُرفع إلى Supabase.
+        const PROV_KEY = 'smm_provider';
+        const PROV_CACHE_KEY = 'smm_provider_services';
+        const PROV_DEFAULT_URL = 'https://smmflare.com/api/v2';
+        let provSyncing = false;
+
+        function provCfg() {
+            let c = {};
+            try { c = JSON.parse(localStorage.getItem(PROV_KEY) || '{}') || {}; } catch (e) { c = {}; }
+            return {
+                url: c.url || PROV_DEFAULT_URL,
+                key: c.key || '',
+                proxy: c.proxy || '',
+                map: (c.map && typeof c.map === 'object') ? c.map : {},
+                balance: Number(c.balance) || 0,
+                currency: c.currency || '',
+                lastCheck: Number(c.lastCheck) || 0
+            };
+        }
+
+        function provSaveCfg(patch) {
+            const next = Object.assign(provCfg(), patch || {});
+            localStorage.setItem(PROV_KEY, JSON.stringify(next));
+            return next;
+        }
+
+        function provReady() { const c = provCfg(); return !!(c.key && c.url); }
+        function provMapped(serviceId) { const c = provCfg(); return c.map[serviceId] ? String(c.map[serviceId]) : ''; }
+
+        function provMsg(text, color) {
+            const el = document.getElementById('provMsg');
+            if (!el) return;
+            el.textContent = text || '';
+            el.style.color = color || '#95a5a6';
+        }
+
+        // العنوان الفعلي للنداء: المزوّد مباشرة أو عبر وسيط CORS
+        function provTarget() {
+            const c = provCfg();
+            if (!c.proxy) return c.url;
+            const p = String(c.proxy).trim();
+            return p.indexOf('{url}') >= 0 ? p.replace('{url}', encodeURIComponent(c.url)) : p + encodeURIComponent(c.url);
+        }
+
+        // نداء واحد لواجهة المزوّد (صيغة لوحات SMM القياسية: /api/v2)
+        async function provCall(params, timeoutMs) {
+            const c = provCfg();
+            if (!c.key) throw new Error('لم يُدخل مفتاح API للمزوّد');
+            const body = new URLSearchParams();
+            body.set('key', c.key);
+            Object.keys(params || {}).forEach(function (k) {
+                if (params[k] !== undefined && params[k] !== null) body.set(k, String(params[k]));
+            });
+            const ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+            const timer = ctrl ? setTimeout(function () { try { ctrl.abort(); } catch (e) {} }, timeoutMs || 25000) : null;
+            let text = '';
+            try {
+                const r = await fetch(provTarget(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: body.toString(),
+                    signal: ctrl ? ctrl.signal : undefined
+                });
+                text = await r.text();
+                if (!r.ok) throw new Error('HTTP ' + r.status + ' — ' + text.slice(0, 160));
+            } catch (e) {
+                if (timer) clearTimeout(timer);
+                if (e && e.name === 'AbortError') throw new Error('انتهت مهلة الاتصال بالمزوّد');
+                if (e instanceof TypeError) throw new Error('تعذّر الوصول إلى المزوّد من المتصفح (CORS) — أضف وسيط CORS في إعدادات المزوّد');
+                throw e;
+            }
+            if (timer) clearTimeout(timer);
+            let data = null;
+            try { data = JSON.parse(text); } catch (e) {
+                throw new Error('رد غير مفهوم من المزوّد: ' + text.slice(0, 120));
+            }
+            if (data && data.error) throw new Error(String(data.error));
+            return data;
+        }
+
+        function provActionAdd(serviceId, link, qty) {
+            return provCall({ action: 'add', service: serviceId, link: link, quantity: qty }, 40000);
+        }
+        function provActionStatus(orderId) {
+            return provCall({ action: 'status', order: orderId }, 25000);
+        }
+
+        function provGetServices() {
+            try {
+                const arr = JSON.parse(localStorage.getItem(PROV_CACHE_KEY) || '[]');
+                return Array.isArray(arr) ? arr : [];
+            } catch (e) { return []; }
+        }
+
+        // ربط تلقائي مبدئي بين خدمات التطبيق وخدمات المزوّد (بحث بالكلمات المفتاحية)
+        function provAutoMap(list) {
+            const cfg = provCfg();
+            const map = Object.assign({}, cfg.map || {});
+            const hints = {
+                yt_views: ['youtube', 'يوتيوب'],
+                ig_reels: ['instagram', 'insta', 'انستقرام', 'إنستغرام'],
+                tt_views: ['tiktok', 'tik tok', 'تيك توك'],
+                x_views: ['twitter', 'x.com', 'تويتر'],
+                fb_views: ['facebook', 'فيسبوك', 'فيس بوك'],
+                tg_views: ['telegram', 'تلجرام', 'تيليجرام']
+            };
+            Object.keys(hints).forEach(function (sid) {
+                if (map[sid]) return;
+                const words = hints[sid];
+                const found = list.find(function (ps) {
+                    const n = String(ps.name || '').toLowerCase();
+                    const platformHit = words.some(function (w) { return n.indexOf(String(w).toLowerCase()) >= 0; });
+                    const viewHit = n.indexOf('view') >= 0 || n.indexOf('مشاهد') >= 0 || n.indexOf('مشاهدة') >= 0;
+                    return platformHit && viewHit;
+                });
+                if (found) map[sid] = String(found.service);
+            });
+            provSaveCfg({ map: map });
+        }
+
+        async function provTest() {
+            provMsg('جارٍ الاتصال بالمزوّد...', '#f39c12');
+            try {
+                const res = await provCall({ action: 'balance' });
+                provSaveCfg({ balance: Number(res.balance) || 0, currency: res.currency || '', lastCheck: Date.now() });
+                provRender();
+                provMsg('✅ متصل — رصيد المزوّد ' + fmtPts(res.balance) + ' ' + (res.currency || ''), '#2ecc71');
+            } catch (e) {
+                provMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+            }
+        }
+
+        async function provLoadServices() {
+            provMsg('جارٍ جلب خدمات المزوّد...', '#f39c12');
+            try {
+                const res = await provCall({ action: 'services' }, 45000);
+                const raw = Array.isArray(res) ? res : Object.keys(res || {}).map(function (k) {
+                    return Object.assign({ service: k }, res[k] || {});
+                });
+                const list = raw.filter(function (ps) { return ps && ps.service; }).map(function (ps) {
+                    return {
+                        service: String(ps.service),
+                        name: String(ps.name || ''),
+                        rate: String(ps.rate || ''),
+                        min: String(ps.min || ''),
+                        max: String(ps.max || ''),
+                        type: String(ps.type || '')
+                    };
+                });
+                if (!list.length) throw new Error('لم يُرجع المزوّد أي خدمة');
+                localStorage.setItem(PROV_CACHE_KEY, JSON.stringify(list));
+                provAutoMap(list);
+                provRender();
+                provMsg('✅ تم جلب ' + fmtPts(list.length) + ' خدمة — راجع الربط أدناه وعدّله إن لزم', '#2ecc71');
+            } catch (e) {
+                provMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+            }
+        }
+
+        // رسم حالة المزوّد وقائمة الربط
+        function provRender() {
+            const c = provCfg();
+            const state = document.getElementById('provState');
+            if (state) {
+                state.textContent = provReady()
+                    ? ('مفعّل' + ((c.balance || c.currency) ? ' | رصيد المزوّد ' + fmtPts(c.balance) + ' ' + c.currency : ''))
+                    : 'غير مفعّل';
+                state.style.color = provReady() ? '#2ecc71' : '#aaa';
+            }
+            const urlEl = document.getElementById('provUrl');
+            const keyEl = document.getElementById('provKey');
+            const proxyEl = document.getElementById('provProxy');
+            if (urlEl && urlEl !== document.activeElement) urlEl.value = c.url;
+            if (keyEl && keyEl !== document.activeElement) keyEl.value = c.key;
+            if (proxyEl && proxyEl !== document.activeElement) proxyEl.value = c.proxy;
+
+            const box = document.getElementById('provMap');
+            if (!box) return;
+            const active = document.activeElement;
+            if (active && box.contains(active) && active.tagName === 'SELECT') return;
+            const cached = provGetServices();
+            box.innerHTML = '';
+            if (!cached.length) {
+                const d = document.createElement('div');
+                d.className = 'hint-text';
+                d.textContent = 'أدخل المفتاح واضغط «جلب الخدمات» لعرض خدمات المزوّد وربط كل خدمة هنا بالخدمة المقابلة عند المزوّد.';
+                box.appendChild(d);
+                return;
+            }
+            const services = (smmState && smmState.services) ? smmState.services : [];
+            services.forEach(function (svc) {
+                const row = document.createElement('div'); row.className = 'admin-price-row';
+                const name = document.createElement('span'); name.textContent = (svc.icon || '') + ' ' + svc.name;
+                row.appendChild(name);
+                const sel = document.createElement('select');
+                sel.style.cssText = 'padding:4px;border-radius:4px;border:1px solid #4a6274;background:#2c3e50;color:#ecf0f1;max-width:360px;';
+                const none = document.createElement('option');
+                none.value = '';
+                none.textContent = '— بدون مزوّد (عدّاد داخلي فقط) —';
+                sel.appendChild(none);
+                cached.forEach(function (ps) {
+                    const o = document.createElement('option');
+                    o.value = ps.service;
+                    o.textContent = '#' + ps.service + ' — ' + ps.name + ' — ' + ps.rate;
+                    sel.appendChild(o);
+                });
+                const cur = provMapped(svc.id);
+                if (cur) sel.value = cur;
+                sel.onchange = function () {
+                    const cfg2 = provCfg();
+                    const map = Object.assign({}, cfg2.map || {});
+                    if (sel.value) map[svc.id] = sel.value; else delete map[svc.id];
+                    provSaveCfg({ map: map });
+                    updateOrderCost();
+                    provMsg(sel.value
+                        ? ('تم ربط «' + svc.name + '» بخدمة المزوّد #' + sel.value)
+                        : ('أُلغي ربط «' + svc.name + '» — سيعمل بالعدّاد الداخلي فقط'), '#2ecc71');
+                };
+                row.appendChild(sel);
+                box.appendChild(row);
+            });
+        }
+
+        // إرسال الطلب إلى المزوّد فعلياً
+        async function provDispatchOrder(order) {
+            const svc = smmService(order.serviceId);
+            const pid = provMapped(order.serviceId);
+            if (!pid) throw new Error('خدمة «' + (svc ? svc.name : order.serviceId) + '» غير مربوطة بخدمة مزوّد');
+            order.mode = 'provider';
+            order.providerService = pid;
+            const res = await provActionAdd(pid, order.url, order.qty);
+            const oid = (res && (res.order || res.order_id)) || '';
+            if (!oid) throw new Error('لم يُرجع المزوّد رقم طلب');
+            order.providerId = oid;
+            order.providerStatus = 'Pending';
+            order.providerSyncedAt = Date.now();
+            smmSave();
+            return oid;
+        }
+
+        // تحديث حالة طلب واحد من المزوّد
+        async function provSyncOne(o) {
+            if (!o || !o.providerId) return false;
+            const res = await provActionStatus(o.providerId);
+            const st = String((res && res.status) || '').toLowerCase();
+            o.providerStatus = (res && res.status) || o.providerStatus || '';
+            if (res && res.charge !== undefined) o.providerCharge = res.charge;
+            if (res && res.start_count !== undefined) o.providerStart = Number(res.start_count) || 0;
+            const remains = res ? Number(res.remains) : NaN;
+            if (!isNaN(remains)) o.providerRemains = remains;
+            if (st.indexOf('complet') >= 0) {
+                o.done = o.qty;
+                o.status = 'completed';
+            } else if (st.indexOf('cancel') >= 0 || st.indexOf('refund') >= 0 || st.indexOf('fail') >= 0) {
+                const svc = smmService(o.serviceId);
+                const remainingQty = Math.max(0, o.qty - (o.done || 0));
+                const refund = svc ? Math.max(0, Math.ceil((remainingQty / svc.unit) * svc.price)) : 0;
+                const acc = smmState.accounts.find(function (a) { return a.id === o.accountId; });
+                if (acc && refund > 0) acc.balance += refund;
+                o.status = 'canceled';
+                o.note = 'أُلغي عند المزوّد — أُعيد ' + fmtPts(refund) + ' نقطة';
+                o.done = Math.min(o.done || 0, o.qty);
+            } else if (!isNaN(remains)) {
+                o.done = Math.min(o.qty, Math.max(0, o.qty - remains));
+                o.status = (o.done >= o.qty) ? 'completed' : 'pending';
+            } else {
+                o.status = 'pending';
+            }
+            o.providerSyncedAt = Date.now();
+            return true;
+        }
+
+        // مزامنة كل الطلبات المُرسلة إلى المزوّد
+        async function provSyncOrders(silent) {
+            if (provSyncing) return;
+            if (!provReady()) {
+                if (!silent) provMsg('⚠️ اربط المزوّد أولاً (المفتاح + جلب الخدمات + الربط)', '#e74c3c');
+                return;
+            }
+            const list = (smmState ? smmState.orders : []).filter(function (o) {
+                return o && o.providerId && o.status !== 'completed' && o.status !== 'canceled';
+            });
+            if (!list.length) {
+                if (!silent) provMsg('لا توجد طلبات مُرسلة للمزوّد بحاجة إلى تحديث', '#95a5a6');
+                return;
+            }
+            provSyncing = true;
+            let ok = 0, errors = 0, lastErr = '';
+            for (let i = 0; i < list.length; i++) {
+                try { await provSyncOne(list[i]); ok++; }
+                catch (e) { errors++; lastErr = (e && e.message ? e.message : String(e)); }
+            }
+            provSyncing = false;
+            smmSave();
+            if (!silent) provMsg('تم التحديث: ' + ok + ' طلب' + (errors ? (' | أخطاء: ' + errors + ' — ' + lastErr) : ''), errors ? '#f39c12' : '#2ecc71');
+        }
+
+        // ===== شبكة تبادل المشاهدات المجانية (بدون أي دفع) =====
+        // كل مستخدم يشاهد روابط الآخرين مشاهدة حقيقية فيكسب «نقاط تبادل»،
+        // وبالنقاط يشتري مشاهدات لرابطه من بقية المستخدمين. لا مزوّد ولا اشتراك ولا مال.
+        // التخزين: نفس دوال Supabase (get_state / set_state) برمز مشترك عام — بلا أي تعديل على قاعدة البيانات.
+        const EX_CODE = 'mv-exchange-v1';
+        const EX_WELCOME = 50; // منحة ترحيب تُمنح مرة واحدة لكل عضو (لكسر الحلقة المفرغة)
+        const EX_LOAN = 25;    // قرض بدء يُمنح مرة واحدة إذا نفد الرصيد
+        let exState = null;
+        let exTimer = null;
+        let exStop = true;
+        let exBusy = false;
+        let exWelcomeGranted = false;
+
+        // مفتاح العضو داخل الشبكة (بدون كشف المعرّف الحقيقي)
+        function exAccKey() {
+            if (!smmAccount) return '';
+            let h = 5381;
+            const s = 'ex::' + smmAccount.id;
+            for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
+            return 'a' + h.toString(36);
+        }
+
+        function exMsg(text, color) {
+            const el = document.getElementById('exMsg');
+            if (!el) return;
+            el.textContent = text || '';
+            el.style.color = color || '#95a5a6';
+        }
+
+        function exNorm(d) {
+            d = d || {};
+            return {
+                v: 1,
+                entries: Array.isArray(d.entries) ? d.entries.filter(function (e) { return e && e.id && e.url; }) : [],
+                credits: (d.credits && typeof d.credits === 'object') ? d.credits : {},
+                welcomed: (d.welcomed && typeof d.welcomed === 'object') ? d.welcomed : {},
+                loans: (d.loans && typeof d.loans === 'object') ? d.loans : {},
+                updatedAt: Number(d.updatedAt) || 0
+            };
+        }
+
+        async function exPull() {
+            if (typeof sbReady !== 'function' || !sbReady()) throw new Error('فعّل «المزامنة» أولاً — الشبكة تستخدمها كنقطة لقاء بين المستخدمين');
+            const rows = await sbRpc('get_state', { p_code: EX_CODE });
+            exState = exNorm(rows && rows.length ? rows[0].data : null);
+            // منحة الترحيب: تُمنح مرة واحدة فقط لكل عضو، وتُحفظ داخل الشبكة نفسها فلا تُكرر بتغيير المتصفح
+            const me = exAccKey();
+            if (me && !exState.welcomed[me]) {
+                exState.welcomed[me] = Date.now();
+                exState.credits[me] = Number(exState.credits[me] || 0) + EX_WELCOME;
+                exWelcomeGranted = true;
+                await exPush();
+            }
+            return exState;
+        }
+
+        async function exPush() {
+            if (!exState) return;
+            exState.updatedAt = Date.now();
+            await sbRpc('set_state', { p_code: EX_CODE, p_data: exState });
+        }
+
+        function exMyCredits() {
+            if (!exState) return 0;
+            return Number(exState.credits[exAccKey()] || 0) || 0;
+        }
+
+        function exUi() {
+            const stateEl = document.getElementById('exState');
+            const me = exAccKey();
+            if (stateEl) {
+                if (!smmAccount) { stateEl.textContent = 'سجّل الدخول'; stateEl.style.color = '#f39c12'; }
+                else if (!exState) { stateEl.textContent = 'غير محمّلة'; stateEl.style.color = '#aaa'; }
+                else {
+                    const mine = exState.entries.filter(function (e) { return e.owner === me; });
+                    const active = exState.entries.filter(function (e) { return e.done < e.need && e.expiresAt > Date.now(); });
+                    const cr = exMyCredits();
+                    stateEl.textContent = 'رصيدك ' + fmtPts(cr) + ' نقطة' + (cr < 0 ? ' (قرض)' : '') +
+                        ' | روابطك ' + fmtPts(mine.length) + ' | في الشبكة ' + fmtPts(active.length);
+                    stateEl.style.color = cr < 0 ? '#e67e22' : '#2ecc71';
+                }
+            }
+            const box = document.getElementById('exList');
+            if (!box) return;
+            box.innerHTML = '';
+            if (!smmAccount || !exState) {
+                const d = document.createElement('div');
+                d.className = 'orders-empty';
+                d.textContent = smmAccount ? 'اضغط «تحديث الشبكة» للاتصال.' : 'سجّل الدخول للمشاركة في الشبكة.';
+                box.appendChild(d);
+                return;
+            }
+            const mine = exState.entries.filter(function (e) { return e.owner === me; });
+            if (!mine.length) {
+                const d = document.createElement('div');
+                d.className = 'orders-empty';
+                d.textContent = 'لا توجد روابط لك في الشبكة بعد.';
+                box.appendChild(d);
+                return;
+            }
+            mine.forEach(function (e) {
+                const item = document.createElement('div'); item.className = 'order-item';
+                const top = document.createElement('div'); top.className = 'order-top';
+                const t = document.createElement('span'); t.textContent = e.url;
+                top.appendChild(t);
+                item.appendChild(top);
+                item.appendChild(makeProgress(e.done, e.need));
+                const meta = document.createElement('div'); meta.className = 'order-meta';
+                const m1 = document.createElement('span'); m1.textContent = 'سُلّم: ' + fmtPts(e.done) + ' / ' + fmtPts(e.need);
+                const m2 = document.createElement('span'); m2.textContent = 'ينتهي: ' + fmtDate(e.expiresAt);
+                meta.appendChild(m1); meta.appendChild(m2);
+                item.appendChild(meta);
+                box.appendChild(item);
+            });
+        }
+
+        async function exRefresh(silent) {
+            if (!smmAccount) { if (!silent) exMsg('سجّل الدخول أولاً', '#f39c12'); return; }
+            if (exBusy) return;
+            exBusy = true;
+            if (!silent) exMsg('جارٍ تحديث الشبكة...', '#f39c12');
+            try {
+                await exPull();
+                exUi();
+                if (exWelcomeGranted) {
+                    exWelcomeGranted = false;
+                    exMsg('🎁 مُنحتك منحة ترحيب ' + fmtPts(EX_WELCOME) + ' نقطة — يمكنك الآن إضافة رابطك مباشرة دون انتظار', '#2ecc71');
+                    return;
+                }
+                if (!silent) exMsg('✅ تم تحديث الشبكة — ' + fmtPts(exState.entries.length) + ' رابط', '#2ecc71');
+            } catch (e) {
+                exMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+            } finally { exBusy = false; }
+        }
+
+        async function exAdd() {
+            if (!smmAccount) { smmNeedLogin(); return; }
+            const urlEl = document.getElementById('exUrl');
+            const qtyEl = document.getElementById('exQty');
+            const url = urlEl ? urlEl.value.trim() : '';
+            const qty = Math.max(1, Math.round(parseFloat(qtyEl ? qtyEl.value : '0') || 0));
+            let valid = false;
+            try { valid = /^https?:\/\/.+/i.test(url) && !!new URL(url).hostname; } catch (e) { valid = false; }
+            if (!valid) { exMsg('الرابط غير صحيح', '#e74c3c'); return; }
+            if (exBusy) return;
+            exBusy = true;
+            exMsg('جارٍ إضافة الرابط إلى الشبكة...', '#f39c12');
+            try {
+                await exPull();
+                const me = exAccKey();
+                const credits = exMyCredits();
+                let addQty = qty;
+                let loanUsed = false;
+                let partial = false;
+                if (credits < qty) {
+                    if (credits > 0) {
+                        // أضف ما تستطيعه الآن بدل رفض الطلب بالكامل
+                        addQty = Math.floor(credits);
+                        partial = true;
+                    } else {
+                        // صفر رصيد: قرض بدء مرة واحدة فقط لكل عضو
+                        if (!exState.loans[me]) {
+                            addQty = Math.min(qty, EX_LOAN);
+                            exState.loans[me] = Date.now();
+                            loanUsed = true;
+                        } else {
+                            throw new Error('رصيدك 0 — اضغط «▶️ شاهد واكسب نقاطاً» واتركه دقيقة ثم أعد الإضافة (استُخدمت المنحة والقرض سابقاً)');
+                        }
+                    }
+                }
+                const target = normalizeUrl(url);
+                let entry = exState.entries.find(function (e) {
+                    return e.owner === me && normalizeUrl(e.url) === target && e.done < e.need && e.expiresAt > Date.now();
+                });
+                if (entry) {
+                    entry.need += addQty;
+                    if (loanUsed) entry.seed = true;
+                } else {
+                    entry = {
+                        id: 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                        owner: me,
+                        url: url,
+                        need: addQty,
+                        done: 0,
+                        seed: loanUsed,
+                        createdAt: Date.now(),
+                        expiresAt: Date.now() + 7 * 24 * 3600 * 1000
+                    };
+                    exState.entries.push(entry);
+                }
+                exState.credits[me] = credits - addQty;
+                await exPush();
+                exUi();
+                if (urlEl) urlEl.value = '';
+                let note = '✅ أُضيف رابطك — سيفتحه الأعضاء ' + fmtPts(addQty) + ' مرة.';
+                if (loanUsed) note += ' (قرض بدء ' + fmtPts(addQty) + ' نقطة — سدّده بمشاهدة روابط الأعضاء)';
+                else if (partial) note += ' (أُضيف بمقدار رصيدك المتاح؛ اكسب المزيد ثم أضف الباقي)';
+                note += ' اترك التطبيق مفتوحاً على أجهزتك لتكسب نقاطاً';
+                exMsg(note, loanUsed ? '#e67e22' : '#2ecc71');
+            } catch (e) {
+                exMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+            } finally { exBusy = false; }
+        }
+
+        function exStopAll() {
+            exStop = true;
+            clearTimeout(exTimer);
+            exTimer = null;
+            exMsg('تم الإيقاف — نقاطك محفوظة', '#f39c12');
+        }
+
+        async function exLoop() {
+            if (exStop) return;
+            if (!smmAccount) { exStopAll(); smmNeedLogin(); return; }
+            const me = exAccKey();
+            try { await exPull(); }
+            catch (e) { exStop = true; exMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c'); return; }
+            const list = exState.entries.filter(function (e) {
+                return e.owner !== me && e.done < e.need && e.expiresAt > Date.now();
+            });
+            if (!list.length) {
+                // لا نتوقف: نعيد المحاولة تلقائياً بعد دقيقة حتى يضيف الأعضاء روابطهم
+                const others = exState.entries.filter(function (e) { return e.owner !== me; });
+                exMsg((others.length
+                    ? '⏳ كل روابط الأعضاء مكتملة الآن — ستُعاد المحاولة تلقائياً بعد دقيقة'
+                    : '🌐 لا توجد روابط من أعضاء آخرين بعد — أضف رابطك وشارك رمز الشبكة مع أصدقائك، وستُعاد المحاولة تلقائياً كل دقيقة')
+                    + ' (رصيدك ' + fmtPts(exMyCredits()) + ' نقطة)', '#f39c12');
+                exUi();
+                exTimer = setTimeout(exLoop, 60000);
+                return;
+            }
+            const entry = list[Math.floor(Math.random() * list.length)];
+            const secs = Math.max(25, getRealMinSeconds());
+            exMsg('▶️ مشاهدة رابط عضو آخر (' + fmtPts(Math.max(1, entry.need - entry.done)) + ' متبقية عند الطلب) — ' + secs + ' ثانية بالصوت...', '#3498db');
+            // فتح حقيقي بالصوت في نافذة ظاهرة، مع إعادة استخدام نفس النافذة لكل رابط
+            if (!openRealWindow(entry.url)) { exStop = true; exMsg('⚠️ اسمح بالنوافذ المنبثقة لهذه الصفحة ثم أعد المحاولة', '#e74c3c'); return; }
+            exTimer = setTimeout(async function () {
+                if (exStop) return;
+                try {
+                    await exPull();
+                    const fresh = exState.entries.find(function (e) { return e.id === entry.id; });
+                    if (fresh && fresh.done < fresh.need) fresh.done += 1;
+                    const m = exAccKey();
+                    exState.credits[m] = Number(exState.credits[m] || 0) + 1;
+                    await exPush();
+                    const cr = exMyCredits();
+                    exMsg('✅ مشاهدة مكتملة — رصيدك الآن ' + fmtPts(cr) + ' نقطة' + (cr < 0 ? ' (عليك سداد قرض البدء)' : ''), cr < 0 ? '#e67e22' : '#2ecc71');
+                } catch (e) {
+                    exMsg('⚠️ تعذّر تحديث الشبكة: ' + (e && e.message ? e.message : e), '#f39c12');
+                }
+                exUi();
+                exTimer = setTimeout(exLoop, 1500);
+            }, secs * 1000);
+        }
+
+        function exStart() {
+            if (!smmAccount) { smmNeedLogin(); return; }
+            if (!exStop) { exMsg('التبادل يعمل بالفعل', '#f39c12'); return; }
+            exStop = false;
+            exMsg('بدأ التبادل — لا تُغلق نافذة المشاهدة', '#3498db');
+            exLoop();
+        }
+
+        // ===== مدير تبديل الشبكة (IP): قراءة الشبكة وتسجيل تنوّعها لكل رابط =====
+        // لا يستطيع أي كود إنشاء IP جديد؛ لكنه يستطيع: قراءة IP الحالي، تسجيل الشبكات المختلفة،
+        // منع عدّ نفس الشبكة مرتين لنفس الرابط، وفتح الرابط عبر مسار/واجهة مختلفة مجاناً.
+        const NET_KEY = 'smm_networks';
+        const NET_URL_KEY = 'smm_url_nets';
+        let netLast = null;
+
+        function netLoadArr(key) {
+            try {
+                const a = JSON.parse(localStorage.getItem(key) || '[]');
+                return Array.isArray(a) ? a : [];
+            } catch (e) { return []; }
+        }
+        function netSaveArr(key, arr) { localStorage.setItem(key, JSON.stringify(arr)); }
+
+        async function netLookup() {
+            // 1) ipwho.is — يسمح بالنداء من المتصفح ويعطي الدولة/المدينة/المزوّد
+            try {
+                const r = await fetch('https://ipwho.is/', { cache: 'no-store' });
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d && d.success !== false && d.ip) {
+                        return { ip: d.ip, country: d.country || '', city: d.city || '', isp: (d.connection && d.connection.isp) || '' };
+                    }
+                }
+            } catch (e) {}
+            // 2) ipapi.co
+            try {
+                const r = await fetch('https://ipapi.co/json/', { cache: 'no-store' });
+                if (r.ok) {
+                    const d = await r.json();
+                    if (d && d.ip) return { ip: d.ip, country: d.country_name || '', city: d.city || '', isp: d.org || '' };
+                }
+            } catch (e) {}
+            // 3) ipify — IP فقط (احتياط أخير)
+            const r = await fetch('https://api.ipify.org?format=json', { cache: 'no-store' });
+            const d = await r.json();
+            if (!d || !d.ip) throw new Error('تعذّر قراءة عنوان الشبكة (قد يكون مغلقاً باتجاه هذه الخدمات)');
+            return { ip: d.ip, country: '', city: '', isp: '' };
+        }
+
+        function netRecord(rec) {
+            if (!rec || !rec.ip) return netLoadArr(NET_KEY);
+            let arr = netLoadArr(NET_KEY);
+            const known = arr.some(function (x) { return x.ip === rec.ip; });
+            if (!known) {
+                arr.unshift({ ip: rec.ip, country: rec.country || '', city: rec.city || '', isp: rec.isp || '', at: Date.now() });
+                arr = arr.slice(0, 60);
+                netSaveArr(NET_KEY, arr);
+            }
+            netLast = rec;
+            return arr;
+        }
+
+        function netUrlMap() {
+            try { return JSON.parse(localStorage.getItem(NET_URL_KEY) || '{}') || {}; } catch (e) { return {}; }
+        }
+        function netUrlRecord(url, ip) {
+            const map = netUrlMap();
+            const k = normalizeUrl(url);
+            const arr = Array.isArray(map[k]) ? map[k] : [];
+            if (ip && arr.indexOf(ip) < 0) arr.push(ip);
+            map[k] = arr.slice(-30);
+            localStorage.setItem(NET_URL_KEY, JSON.stringify(map));
+            return map[k];
+        }
+
+        function netMsg(text, color) {
+            const el = document.getElementById('netMsg');
+            if (!el) return;
+            el.textContent = text || '';
+            el.style.color = color || '#95a5a6';
+        }
+
+        function netAliasEnabled() {
+            const el = document.getElementById('netAlias');
+            if (el) return !!el.checked;
+            return localStorage.getItem('smm_net_alias') === '1';
+        }
+
+        // فتح الرابط من مسار مختلف مجاناً: ترجمة جوجل (نقطة وصول أخرى) أو نسخة الجوال
+        function netAliasUrl(url) {
+            if (!netAliasEnabled()) return url;
+            netAliasUrl._i = ((netAliasUrl._i || 0) + 1) % 3; // 0 = مباشر
+            const mode = netAliasUrl._i;
+            if (mode === 0) return url;
+            let u;
+            try { u = new URL(url); } catch (e) { return url; }
+            const bare = u.hostname.replace(/^www\./i, '');
+            if (mode === 2 && /(^|\.)youtube\.com$/i.test(bare)) {
+                u.hostname = 'm.youtube.com';
+                return u.toString();
+            }
+            u.hostname = u.hostname.replace(/\./g, '-') + '.translate.goog';
+            u.searchParams.set('_x_tr_sl', 'auto');
+            u.searchParams.set('_x_tr_tl', 'ar');
+            u.searchParams.set('_x_tr_hl', 'ar');
+            return u.toString();
+        }
+
+        function netRender() {
+            const hist = netLoadArr(NET_KEY);
+            const stateEl = document.getElementById('netState');
+            if (stateEl) {
+                stateEl.textContent = hist.length ? (hist.length + ' شبكة') : 'غير مقروءة';
+                stateEl.style.color = hist.length ? '#2ecc71' : '#aaa';
+            }
+            const info = document.getElementById('netInfo');
+            if (info) {
+                info.textContent = netLast
+                    ? ('شبكتك الآن: ' + netLast.ip +
+                        ([netLast.city, netLast.country].filter(Boolean).length ? ' — ' + [netLast.city, netLast.country].filter(Boolean).join('، ') : '') +
+                        (netLast.isp ? ' — ' + netLast.isp : '') +
+                        ' | شبكات مسجّلة: ' + hist.length)
+                    : 'اضغط «تحقق من الشبكة» لقراءة عنوان شبكتك الحالي.';
+            }
+            const box = document.getElementById('netUrlList');
+            if (!box) return;
+            box.innerHTML = '';
+            const map = netUrlMap();
+            const keys = Object.keys(map);
+            if (!keys.length) {
+                const d = document.createElement('div'); d.className = 'orders-empty';
+                d.textContent = 'لم يُفتح أي رابط من خلال هذه اللوحة بعد.';
+                box.appendChild(d);
+                return;
+            }
+            keys.slice(-20).reverse().forEach(function (k) {
+                const ips = Array.isArray(map[k]) ? map[k] : [];
+                const item = document.createElement('div'); item.className = 'order-item';
+                const top = document.createElement('div'); top.className = 'order-top';
+                const t = document.createElement('span'); t.textContent = k;
+                const chip = document.createElement('span');
+                chip.className = 'status-chip ' + (ips.length > 1 ? 'done' : 'pending');
+                chip.textContent = ips.length + ' شبكة';
+                top.appendChild(t); top.appendChild(chip);
+                item.appendChild(top);
+                const meta = document.createElement('div'); meta.className = 'order-meta';
+                const m1 = document.createElement('span'); m1.textContent = 'آخر شبكة: ' + (ips[ips.length - 1] || '—');
+                meta.appendChild(m1);
+                item.appendChild(meta);
+                box.appendChild(item);
+            });
+        }
+
+        // قراءة الشبكة الحالية وتسجيلها، وإخبارك هل هي جديدة أم مكرّرة
+        async function netVerify(silent) {
+            if (!silent) netMsg('جارٍ قراءة عنوان شبكتك...', '#f39c12');
+            try {
+                const before = netLoadArr(NET_KEY).length;
+                const rec = await netLookup();
+                const hist = netRecord(rec);
+                netRender();
+                const isNew = before === 0 || hist.length > before;
+                if (!silent) {
+                    netMsg((isNew ? '✅ شبكة جديدة' : 'ℹ️ نفس الشبكة السابقة') + ' — ' + rec.ip +
+                        ([rec.city, rec.country].filter(Boolean).length ? ' (' + [rec.city, rec.country].filter(Boolean).join('، ') + ')' : ''),
+                        isNew ? '#2ecc71' : '#f39c12');
+                }
+                return { rec: rec, isNew: isNew };
+            } catch (e) {
+                netMsg('❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+                return null;
+            }
+        }
+
+        // فتح رابط من الشبكة الحالية مع تسجيل تنوّع الشبكات
+        async function netOpenFromHere() {
+            const urlEl = document.getElementById('netUrl');
+            const orderEl = document.getElementById('orderLink');
+            let url = urlEl ? urlEl.value.trim() : '';
+            if (!url && orderEl) url = orderEl.value.trim();
+            let valid = false;
+            try { valid = /^https?:\/\/.+/i.test(url) && !!new URL(url).hostname; } catch (e) { valid = false; }
+            if (!valid) { netMsg('الصق رابطاً صحيحاً يبدأ بـ http أو https', '#e74c3c'); return; }
+            const res = await netVerify(true);
+            if (!res) return;
+            const ips = netUrlRecord(url, res.rec.ip);
+            netRender();
+            const strong = res.isNew;
+            netMsg((strong ? '✅ شبكة جديدة' : '⚠️ نفس الشبكة') + ' — هذا الرابط فُتح من ' + ips.length + ' شبكة مختلفة' +
+                (strong ? ' — جارٍ الفتح بالصوت...' : ' — بدّل الشبكة (طيران / VPN) قبل الفتح كي يُحتمل احتساب مشاهدة جديدة'),
+                strong ? '#2ecc71' : '#f39c12');
+            openRealWindow(url);
+        }
+
+        // ---------- الطلبات ----------
+        async function placeOrder() {
+            if (!smmNeedLogin()) return;
+            const sel = document.getElementById('orderService');
+            const urlEl = document.getElementById('orderLink');
+            const qtyEl = document.getElementById('orderQty');
+            const svc = sel ? smmService(sel.value) : null;
+            const url = urlEl ? urlEl.value.trim() : '';
+            const qty = qtyEl ? Math.round(parseFloat(qtyEl.value) || 0) : 0;
+            if (!svc) { smmMsg('orderMsg', 'اختر خدمة أولاً', '#e74c3c'); return; }
+            let validUrl = false;
+            try { validUrl = /^https?:\/\/.+/i.test(url) && !!new URL(url).hostname; } catch (e) { validUrl = false; }
+            if (!validUrl) { smmMsg('orderMsg', 'الرابط غير صحيح', '#e74c3c'); return; }
+            if (qty < svc.min || qty > svc.max) {
+                smmMsg('orderMsg', 'الكمية يجب أن تكون بين ' + fmtPts(svc.min) + ' و' + fmtPts(svc.max), '#e74c3c');
+                return;
+            }
+            const cost = smmCost(svc, qty);
+            if (cost > smmAccount.balance) {
+                smmMsg('orderMsg', 'الرصيد غير كافٍ — تحتاج ' + fmtPts(cost) + ' نقطة ورصيدك ' + fmtPts(smmAccount.balance), '#e74c3c');
+                return;
+            }
+            const viaProvider = provReady() && !!provMapped(svc.id);
+            smmAccount.balance -= cost;
+            const order = {
+                id: 'o' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                accountId: smmAccount.id,
+                serviceId: svc.id,
+                url: url,
+                qty: qty,
+                cost: cost,
+                done: 0,
+                status: 'pending',
+                mode: viaProvider ? 'provider' : 'internal',
+                createdAt: Date.now()
+            };
+            smmState.orders.unshift(order);
+            smmSave();
+            if (urlEl) urlEl.value = '';
+            if (!viaProvider) {
+                smmEnsureBookmark(url, svc);
+                smmMsg('orderMsg', 'تم قبول الطلب بالوضع الداخلي — أُضيف الرابط لقائمة التشغيل وتُحتسب المشاهدات عند فتحه. اربط خدمات المزوّد بالأعلى لتسليم حقيقي على الرابط', '#2ecc71');
+                return;
+            }
+            smmMsg('orderMsg', 'جارٍ إرسال الطلب إلى المزوّد...', '#f39c12');
+            try {
+                const pid = await provDispatchOrder(order);
+                smmMsg('orderMsg', '✅ أُرسل إلى المزوّد — رقم الطلب #' + pid + ' — سيجري تسليم ' + fmtPts(qty) + ' على الرابط فعلياً', '#2ecc71');
+                if (typeof showToast === 'function') showToast('🌐 الطلب #' + pid + ' أُرسل إلى المزوّد');
+            } catch (e) {
+                smmAccount.balance += cost;
+                order.status = 'rejected';
+                order.mode = 'internal';
+                order.note = 'فشل الإرسال إلى المزوّد: ' + (e && e.message ? e.message : e);
+                smmSave();
+                smmMsg('orderMsg', '❌ ' + order.note + ' — أُعيدت ' + fmtPts(cost) + ' نقطة لرصيدك', '#e74c3c');
+            }
+        }
+
+        function smmEnsureBookmark(url, svc) {
+            if (typeof findExistingBookmark === 'function' && findExistingBookmark(url)) return;
+            const list = document.getElementById('bookmarkList');
+            if (!list || typeof addBookmarkToList !== 'function') return;
+            addBookmarkToList(url, list.children.length + 1, 0, { interval: String(svc.seconds || 30), unit: 's' });
+            if (typeof saveBookmarks === 'function') saveBookmarks();
+        }
+
+        // تُستدعى عند احتساب مشاهدة للرابط (الظهور في الإطار أو الفتح اليدوي أو دورة تشغيل فعلية)
+        function fulfillOrdersFor(url) {
+            if (!smmState) return;
+            const target = normalizeUrl(url);
+            let changed = false;
+            smmState.orders.forEach(function (o) {
+                if (o.status !== 'pending') return;
+                // طلبات المزوّد تُسلَّم خارجياً — لا تُحتسب من التشغيل المحلي
+                if (o.mode === 'provider' || o.providerId) return;
+                if (normalizeUrl(o.url) !== target) return;
+                if (o.done >= o.qty) { o.status = 'completed'; changed = true; return; }
+                o.done = Math.min(o.qty, o.done + 1);
+                if (o.done >= o.qty) o.status = 'completed';
+                changed = true;
+            });
+            if (changed) smmSave();
+        }
+
+        function smmCancelOrder(id) {
+            if (!smmNeedLogin()) return;
+            const o = smmState.orders.find(function (x) { return x.id === id && x.accountId === smmAccount.id; });
+            if (!o || o.status !== 'pending') return;
+            if (o.providerId) {
+                smmMsg('orderMsg', 'هذا الطلب مُرسل إلى المزوّد (#' + o.providerId + ') — ألغِه من لوحة المزوّد ثم اضغط «مزامنة الطلبات» لاسترجاع النقاط', '#f39c12');
+                return;
+            }
+            if (!confirm('إلغاء الطلب واسترجاع نقاط الجزء غير المنفذ؟')) return;
+            const svc = smmService(o.serviceId);
+            const remaining = Math.max(0, o.qty - o.done);
+            const refund = svc ? Math.max(0, Math.ceil((remaining / svc.unit) * svc.price)) : 0;
+            smmAccount.balance += refund;
+            o.status = 'canceled';
+            smmSave();
+            smmMsg('orderMsg', 'تم إلغاء الطلب واسترجاع ' + fmtPts(refund) + ' نقطة', '#f39c12');
+        }
+
+        function smmStatusChip(status, map) {
+            const info = map[status] || { label: status, cls: 'pending' };
+            const chip = document.createElement('span');
+            chip.className = 'status-chip ' + info.cls;
+            chip.textContent = info.label;
+            return chip;
+        }
+
+        function makeProgress(done, qty) {
+            const track = document.createElement('div'); track.className = 'progress-track';
+            const fill = document.createElement('div'); fill.className = 'progress-fill';
+            fill.style.width = (qty > 0 ? Math.min(100, Math.round(done / qty * 100)) : 0) + '%';
+            track.appendChild(fill);
+            return track;
+        }
+
+        function orderCard(o, opts) {
+            opts = opts || {};
+            const svc = smmService(o.serviceId);
+            const item = document.createElement('div'); item.className = 'order-item';
+            const top = document.createElement('div'); top.className = 'order-top';
+            const title = document.createElement('span');
+            title.textContent = svc ? ((svc.icon || '') + ' ' + svc.name) : 'خدمة';
+            top.appendChild(title);
+            // شبكة أمان للعرض: لا يظهر «مكتمل» إلا إذا سُلّمت الكمية كاملة
+            const shownStatus = (o.status === 'completed' && o.qty > 0 && o.done < o.qty) ? 'pending' : o.status;
+            top.appendChild(smmStatusChip(shownStatus, SMM_STATUS));
+            const link = document.createElement('div'); link.className = 'order-link'; link.textContent = o.url; link.title = o.url;
+            item.appendChild(top); item.appendChild(link); item.appendChild(makeProgress(o.done, o.qty));
+            const meta = document.createElement('div'); meta.className = 'order-meta';
+            const m1 = document.createElement('span'); m1.textContent = 'تم: ' + fmtPts(o.done) + ' / ' + fmtPts(o.qty);
+            const m2 = document.createElement('span'); m2.textContent = 'التكلفة: ' + fmtPts(o.cost) + ' نقطة';
+            const m3 = document.createElement('span'); m3.textContent = fmtDate(o.createdAt);
+            meta.appendChild(m1); meta.appendChild(m2); meta.appendChild(m3);
+            if (o.providerId) {
+                const mp = document.createElement('span');
+                mp.textContent = '🌐 المزوّد #' + o.providerId + ' — ' + (o.providerStatus || 'Pending') +
+                    ((o.providerRemains !== undefined && o.providerRemains !== null && !isNaN(Number(o.providerRemains))) ? ' — متبقٍ ' + fmtPts(o.providerRemains) : '');
+                mp.style.color = '#3498db';
+                meta.appendChild(mp);
+            }
+            item.appendChild(meta);
+            const actions = document.createElement('div'); actions.className = 'order-actions';
+            if (opts.cancel && o.status === 'pending') {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.textContent = 'إلغاء واسترجاع';
+                b.onclick = function () { smmCancelOrder(o.id); };
+                actions.appendChild(b);
+            }
+            if (actions.children.length) item.appendChild(actions);
+            return item;
+        }
+
+        function renderOrders() {
+            const box = document.getElementById('ordersList');
+            const stats = document.getElementById('ordersStats');
+            if (!box) return;
+            const mine = smmAccount ? smmState.orders.filter(function (o) { return o.accountId === smmAccount.id; }) : [];
+            if (stats) {
+                const pending = mine.filter(function (o) { return o.status === 'pending'; }).length;
+                const done = mine.filter(function (o) { return o.status === 'completed'; }).length;
+                stats.textContent = 'الإجمالي: ' + fmtPts(mine.length) + ' | قيد التنفيذ: ' + fmtPts(pending) + ' | مكتمل: ' + fmtPts(done);
+            }
+            box.innerHTML = '';
+            if (!smmAccount) {
+                const d = document.createElement('div'); d.className = 'orders-empty'; d.textContent = 'سجّل الدخول لعرض طلباتك.';
+                box.appendChild(d);
+                return;
+            }
+            if (!mine.length) {
+                const d = document.createElement('div'); d.className = 'orders-empty'; d.textContent = 'لا توجد طلبات بعد.';
+                box.appendChild(d);
+                return;
+            }
+            mine.forEach(function (o) { box.appendChild(orderCard(o, { cancel: true })); });
+        }
+
+        // ---------- الإيداعات ----------
+        function requestDeposit() {
+            if (!smmNeedLogin()) return;
+            const amtEl = document.getElementById('depAmount');
+            const methodEl = document.getElementById('depMethod');
+            const refEl = document.getElementById('depRef');
+            const noteEl = document.getElementById('depNote');
+            const amount = Math.round(parseFloat(amtEl ? amtEl.value : '0') || 0);
+            if (!(amount > 0)) { smmMsg('depMsg', 'أدخل مبلغاً صحيحاً', '#e74c3c'); return; }
+            const pendingCount = smmState.deposits.filter(function (d) { return d.accountId === smmAccount.id && d.status === 'pending'; }).length;
+            if (pendingCount >= 3) { smmMsg('depMsg', 'لديك 3 طلبات إيداع قيد المراجعة — انتظر مراجعتها', '#f39c12'); return; }
+            smmState.deposits.unshift({
+                id: 'd' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                accountId: smmAccount.id,
+                amount: amount,
+                method: methodEl ? methodEl.value : 'other',
+                reference: refEl ? refEl.value.trim() : '',
+                note: noteEl ? noteEl.value.trim() : '',
+                status: 'pending',
+                createdAt: Date.now()
+            });
+            smmSave();
+            if (refEl) refEl.value = '';
+            if (noteEl) noteEl.value = '';
+            smmMsg('depMsg', 'أُرسل طلب الإيداع — يظهر في لوحة الإدارة للمراجعة', '#2ecc71');
+        }
+
+        function depositCard(d, admin) {
+            const acc = smmState.accounts.find(function (a) { return a.id === d.accountId; });
+            const item = document.createElement('div'); item.className = 'order-item';
+            const top = document.createElement('div'); top.className = 'order-top';
+            const title = document.createElement('span');
+            title.textContent = 'إيداع ' + fmtPts(d.amount) + ' نقطة' + (admin && acc ? ' — ' + acc.user : '');
+            top.appendChild(title);
+            top.appendChild(smmStatusChip(d.status, DEP_STATUS));
+            item.appendChild(top);
+            const meta = document.createElement('div'); meta.className = 'order-meta';
+            const m1 = document.createElement('span'); m1.textContent = 'الطريقة: ' + d.method;
+            const m2 = document.createElement('span'); m2.textContent = 'المرجع: ' + (d.reference || '—');
+            const m3 = document.createElement('span'); m3.textContent = fmtDate(d.createdAt);
+            meta.appendChild(m1); meta.appendChild(m2); meta.appendChild(m3);
+            if (d.note) { const m4 = document.createElement('span'); m4.textContent = 'ملاحظة: ' + d.note; meta.appendChild(m4); }
+            if (d.adminNote) { const m5 = document.createElement('span'); m5.textContent = 'رد الإدارة: ' + d.adminNote; meta.appendChild(m5); }
+            item.appendChild(meta);
+            if (admin && d.status === 'pending') {
+                const actions = document.createElement('div'); actions.className = 'order-actions';
+                const ok = document.createElement('button'); ok.type = 'button'; ok.className = 'ok'; ok.textContent = 'اعتماد وإضافة الرصيد';
+                ok.onclick = function () { smmReviewDeposit(d.id, true); };
+                const no = document.createElement('button'); no.type = 'button'; no.textContent = 'رفض';
+                no.onclick = function () { smmReviewDeposit(d.id, false); };
+                actions.appendChild(ok); actions.appendChild(no);
+                item.appendChild(actions);
+            }
+            return item;
+        }
+
+        function renderDeposits() {
+            const box = document.getElementById('depList');
+            if (!box) return;
+            const mine = smmAccount ? smmState.deposits.filter(function (d) { return d.accountId === smmAccount.id; }) : [];
+            box.innerHTML = '';
+            if (!mine.length) {
+                const d = document.createElement('div'); d.className = 'orders-empty';
+                d.textContent = smmAccount ? 'لا توجد طلبات إيداع.' : 'سجّل الدخول لعرض طلبات الإيداع.';
+                box.appendChild(d);
+                return;
+            }
+            mine.forEach(function (d) { box.appendChild(depositCard(d, false)); });
+        }
+
+        // ---------- الإدارة ----------
+        function smmReviewDeposit(id, approve) {
+            if (!smmIsAdmin()) return;
+            const d = smmState.deposits.find(function (x) { return x.id === id; });
+            if (!d || d.status !== 'pending') return;
+            const note = prompt(approve ? 'ملاحظة الاعتماد (اختياري):' : 'سبب الرفض (اختياري):', '');
+            if (note === null) return;
+            if (approve) {
+                const acc = smmState.accounts.find(function (a) { return a.id === d.accountId; });
+                if (acc) acc.balance += d.amount;
+                d.status = 'approved';
+            } else {
+                d.status = 'rejected';
+            }
+            d.adminNote = (note || '').trim();
+            d.reviewedAt = Date.now();
+            d.reviewedBy = smmAccount.id;
+            smmSave();
+            smmMsg('depMsg', approve ? 'تم اعتماد الإيداع وإضافة الرصيد' : 'تم رفض طلب الإيداع', approve ? '#2ecc71' : '#f39c12');
+        }
+
+        function smmGrant(accountId, amount) {
+            if (!smmIsAdmin()) return;
+            const acc = smmState.accounts.find(function (a) { return a.id === accountId; });
+            if (!acc || !amount) return;
+            acc.balance = Math.max(0, (Number(acc.balance) || 0) + amount);
+            smmSave();
+        }
+
+        function smmAdminSaveOrder(id, status, delivered) {
+            if (!smmIsAdmin()) return;
+            const o = smmState.orders.find(function (x) { return x.id === id; });
+            if (!o) return;
+            if (!SMM_STATUS[status]) status = o.status;
+            o.done = Math.min(o.qty, Math.max(0, Number(delivered) || 0));
+            if (status === 'completed') {
+                // الإكمال يعني تسليم الكمية كاملة، لا يُترك 32/100 باسم «مكتمل»
+                o.done = o.qty;
+            } else if (status === 'pending' && o.qty > 0 && o.done >= o.qty) {
+                status = 'completed';
+            }
+            o.status = status;
+            smmSave();
+            smmMsg('orderMsg', 'تم تحديث الطلب', '#2ecc71');
+        }
+
+        function adminOrderCard(o) {
+            const acc = smmState.accounts.find(function (a) { return a.id === o.accountId; });
+            const item = orderCard(o, {});
+            const meta = document.createElement('div'); meta.className = 'order-meta';
+            const who = document.createElement('span'); who.textContent = 'الحساب: ' + (acc ? acc.user : '—');
+            meta.appendChild(who);
+            item.appendChild(meta);
+            const actions = document.createElement('div'); actions.className = 'order-actions';
+            const sel = document.createElement('select');
+            Object.keys(SMM_STATUS).forEach(function (k) {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.textContent = SMM_STATUS[k].label;
+                if (o.status === k) opt.selected = true;
+                sel.appendChild(opt);
+            });
+            sel.style.cssText = 'padding:4px;border-radius:4px;border:1px solid #4a6274;background:#2c3e50;color:#ecf0f1;';
+            const doneInp = document.createElement('input');
+            doneInp.type = 'number'; doneInp.min = '0'; doneInp.max = String(o.qty); doneInp.value = String(o.done);
+            doneInp.style.cssText = 'width:90px;padding:4px;border-radius:4px;border:1px solid #4a6274;background:#2c3e50;color:#ecf0f1;';
+            const save = document.createElement('button'); save.type = 'button'; save.className = 'ok'; save.textContent = 'حفظ';
+            save.onclick = function () { smmAdminSaveOrder(o.id, sel.value, Math.round(parseFloat(doneInp.value) || 0)); };
+            actions.appendChild(sel); actions.appendChild(doneInp); actions.appendChild(save);
+            if (o.providerId) {
+                const sync = document.createElement('button');
+                sync.type = 'button';
+                sync.textContent = '🔄 تحديث من المزوّد';
+                sync.onclick = async function () {
+                    try {
+                        await provSyncOne(o);
+                        smmSave();
+                        smmMsg('orderMsg', 'تم تحديث الطلب #' + o.providerId + ' من المزوّد', '#2ecc71');
+                    } catch (e) {
+                        smmMsg('orderMsg', '❌ ' + (e && e.message ? e.message : e), '#e74c3c');
+                    }
+                };
+                actions.appendChild(sync);
+            }
+            item.appendChild(actions);
+            return item;
+        }
+
+        function renderAdminServices() {
+            const box = document.getElementById('adminPrices');
+            if (!box) return;
+            // لا تُعِد بناء الحقول أثناء كتابة المدير فيها
+            const focused = document.activeElement;
+            if (focused && box.contains(focused) && (focused.tagName === 'INPUT' || focused.tagName === 'SELECT')) return;
+            box.innerHTML = '';
+            smmState.services.forEach(function (svc) {
+                const row = document.createElement('div'); row.className = 'admin-price-row';
+                const name = document.createElement('span'); name.textContent = (svc.icon || '') + ' ' + svc.name;
+                row.appendChild(name);
+                [['price', 'سعر كل ' + fmtPts(svc.unit)], ['min', 'الحد الأدنى'], ['max', 'الحد الأقصى'], ['seconds', 'ثانية للدورة']].forEach(function (pair) {
+                    const inp = document.createElement('input');
+                    inp.type = 'number'; inp.min = '0'; inp.value = svc[pair[0]];
+                    inp.placeholder = pair[1]; inp.title = pair[1];
+                    inp.dataset.key = pair[0];
+                    row.appendChild(inp);
+                });
+                const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ok'; btn.textContent = 'حفظ';
+                btn.onclick = function () {
+                    const patch = {};
+                    row.querySelectorAll('input').forEach(function (inp) {
+                        patch[inp.dataset.key] = Math.max(0, Math.round(parseFloat(inp.value) || 0));
+                    });
+                    if (patch.price <= 0) delete patch.price;
+                    Object.assign(svc, patch);
+                    if (svc.max < svc.min) svc.max = svc.min;
+                    smmSave();
+                    smmMsg('orderMsg', 'تم حفظ إعدادات الخدمة', '#2ecc71');
+                };
+                row.appendChild(btn);
+                box.appendChild(row);
+            });
+        }
+
+        function renderAdmin() {
+            const sec = document.getElementById('adminSection');
+            if (!sec) return;
+            const admin = smmIsAdmin();
+            sec.style.display = admin ? '' : 'none';
+            if (!admin) return;
+            const activeEl = document.activeElement;
+            if (activeEl && sec.contains(activeEl) && activeEl.tagName === 'INPUT') return;
+
+            const pendingDeps = smmState.deposits.filter(function (d) { return d.status === 'pending'; });
+            const stats = document.getElementById('adminStats');
+            if (stats) {
+                stats.textContent = 'إيداعات معلّقة: ' + fmtPts(pendingDeps.length) + ' | طلبات: ' + fmtPts(smmState.orders.length) + ' | حسابات: ' + fmtPts(smmState.accounts.length);
+            }
+
+            const depBox = document.getElementById('adminDeposits');
+            if (depBox) {
+                depBox.innerHTML = '';
+                if (!pendingDeps.length) {
+                    const d = document.createElement('div'); d.className = 'orders-empty'; d.textContent = 'لا توجد طلبات إيداع بانتظار المراجعة.';
+                    depBox.appendChild(d);
+                } else {
+                    pendingDeps.forEach(function (d) { depBox.appendChild(depositCard(d, true)); });
+                }
+            }
+
+            const ordBox = document.getElementById('adminOrders');
+            if (ordBox) {
+                ordBox.innerHTML = '';
+                if (!smmState.orders.length) {
+                    const d = document.createElement('div'); d.className = 'orders-empty'; d.textContent = 'لا توجد طلبات.';
+                    ordBox.appendChild(d);
+                } else {
+                    smmState.orders.slice(0, 100).forEach(function (o) { ordBox.appendChild(adminOrderCard(o)); });
+                }
+            }
+
+            const accBox = document.getElementById('adminAccounts');
+            if (accBox) {
+                accBox.innerHTML = '';
+                smmState.accounts.forEach(function (a) {
+                    const item = document.createElement('div'); item.className = 'order-item';
+                    const top = document.createElement('div'); top.className = 'order-top';
+                    const name = document.createElement('span'); name.textContent = a.user;
+                    const chip = document.createElement('span');
+                    chip.className = 'role-chip' + (a.role === 'admin' ? ' admin' : '');
+                    chip.textContent = a.role === 'admin' ? 'مدير' : 'مستخدم';
+                    top.appendChild(name); top.appendChild(chip);
+                    item.appendChild(top);
+                    const meta = document.createElement('div'); meta.className = 'order-meta';
+                    const b = document.createElement('span'); b.textContent = 'الرصيد: ' + fmtPts(a.balance) + ' نقطة';
+                    const c = document.createElement('span'); c.textContent = 'أُنشئ: ' + fmtDate(a.createdAt);
+                    meta.appendChild(b); meta.appendChild(c);
+                    item.appendChild(meta);
+                    const actions = document.createElement('div'); actions.className = 'order-actions';
+                    const inp = document.createElement('input');
+                    inp.type = 'number'; inp.min = '1'; inp.value = '500';
+                    inp.style.cssText = 'width:90px;padding:4px;border-radius:4px;border:1px solid #4a6274;background:#2c3e50;color:#ecf0f1;';
+                    const add = document.createElement('button'); add.type = 'button'; add.className = 'ok'; add.textContent = 'إضافة نقاط';
+                    add.onclick = function () { smmGrant(a.id, Math.round(parseFloat(inp.value) || 0)); };
+                    const sub = document.createElement('button'); sub.type = 'button'; sub.textContent = 'خصم نقاط';
+                    sub.onclick = function () { smmGrant(a.id, -Math.round(parseFloat(inp.value) || 0)); };
+                    actions.appendChild(inp); actions.appendChild(add); actions.appendChild(sub);
+                    item.appendChild(actions);
+                    accBox.appendChild(item);
+                });
+            }
+
+            renderAdminServices();
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            smmLoad();
+            const on = function (id, ev, fn) {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener(ev, fn);
+            };
+            on('loginBtn', 'click', smmLogin);
+            on('signupBtn', 'click', smmSignup);
+            on('logoutBtn', 'click', smmLogout);
+            on('placeOrderBtn', 'click', placeOrder);
+            on('depBtn', 'click', requestDeposit);
+            on('orderService', 'change', updateOrderCost);
+            on('orderQty', 'input', updateOrderCost);
+            on('authPass', 'keypress', function (e) { if (e.key === 'Enter') smmLogin(); });
+            on('orderLink', 'keypress', function (e) { if (e.key === 'Enter') placeOrder(); });
+
+            // ===== إعدادات مزوّد الخدمات الحقيقي =====
+            const provUrlEl = document.getElementById('provUrl');
+            const provKeyEl = document.getElementById('provKey');
+            const provProxyEl = document.getElementById('provProxy');
+            const pc0 = provCfg();
+            if (provUrlEl) provUrlEl.value = pc0.url;
+            if (provKeyEl) provKeyEl.value = pc0.key;
+            if (provProxyEl) provProxyEl.value = pc0.proxy;
+            on('provSave', 'click', function () {
+                const url = provUrlEl ? provUrlEl.value.trim() : '';
+                const key = provKeyEl ? provKeyEl.value.trim() : '';
+                const proxy = provProxyEl ? provProxyEl.value.trim() : '';
+                provSaveCfg({ url: url || PROV_DEFAULT_URL, key: key, proxy: proxy });
+                provRender();
+                updateOrderCost();
+                provMsg(key ? '✅ حُفظت إعدادات المزوّد — اختبر الاتصال ثم اجلب الخدمات' : 'حُفظ الرابط بلا مفتاح — المزوّد غير مفعّل', key ? '#2ecc71' : '#f39c12');
+            });
+            on('provTest', 'click', provTest);
+            on('provLoadServices', 'click', provLoadServices);
+            on('provSyncOrders', 'click', function () { provSyncOrders(false); });
+            provRender();
+            // مزامنة تلقائية هادئة كل 90 ثانية أثناء فتح الصفحة
+            setInterval(function () {
+                if (document.visibilityState === 'visible' && provReady()) provSyncOrders(true);
+            }, 90000);
+
+            // ===== شبكة التبادل المجانية =====
+            on('exAdd', 'click', exAdd);
+            on('exWatch', 'click', exStart);
+            on('exStop', 'click', exStopAll);
+            on('exRefresh', 'click', function () { exRefresh(false); });
+            const exPanel = document.getElementById('exchangePanel');
+            if (exPanel) {
+                exPanel.addEventListener('toggle', function () {
+                    if (exPanel.open && smmAccount) exRefresh(true);
+                });
+            }
+            exUi();
+
+            // ===== مدير تبديل الشبكة (IP) =====
+            on('netCheck', 'click', function () { netVerify(false); });
+            on('netOpen', 'click', netOpenFromHere);
+            const netAliasEl = document.getElementById('netAlias');
+            if (netAliasEl) {
+                netAliasEl.checked = localStorage.getItem('smm_net_alias') === '1';
+                netAliasEl.addEventListener('change', function () {
+                    localStorage.setItem('smm_net_alias', netAliasEl.checked ? '1' : '0');
+                    netMsg(netAliasEl.checked
+                        ? 'تم تفعيل تبديل الواجهة (Translate / جوال) — سيُفتح كل رابط عبر مسار مختلف'
+                        : 'أُلغي تبديل الواجهة — الفتح مباشر', '#2ecc71');
+                });
+            }
+            netRender();
+            // قراءة الشبكة تلقائياً مرة عند فتح التطبيق (لتسجيل أول شبكة)
+            setTimeout(function () { if (!netLast) netVerify(true); }, 2500);
+        });
 
         // ===== Supabase sync: per-link merge (never overwrites the whole list) =====
         const SB_URL = 'https://euukvepdgexdlhbkimel.supabase.co';
@@ -1911,6 +4188,95 @@
             return pad2(d.getHours()) + ':' + pad2(d.getMinutes());
         }
         function sbFail(e) { sbStatus('⚠️ ' + (e && e.message ? e.message : e), '#e74c3c'); }
+
+        // رمز مزامنة مشتق من اسم المستخدم: نفس الاسم = نفس الرمز في أي متصفح
+        function sbCodeFromUser(user) {
+            const u = String(user || '').trim().toLowerCase();
+            let h = 2166136261;
+            for (let i = 0; i < u.length; i++) { h ^= u.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+            return 'mv-' + (u || 'user') + '-' + h.toString(36);
+        }
+
+        // تفعيل تلقائي: إن وُجد المفتاح بلا رمز نشتق الرمز من اسم المستخدم
+        function sbAutoEnable(user) {
+            const c = sbCfg();
+            if (c.key && !c.code && user) sbOrigSet.call(localStorage, 'sb_code', sbCodeFromUser(user));
+            return sbReady();
+        }
+
+        // استيراد إعدادات المزامنة من «رابط النقل» (#sbk=...&sbc=...)
+        function sbApplyUrlConfig() {
+            try {
+                const raw = String(location.hash || '').replace(/^#/, '');
+                if (!raw) return false;
+                const params = new URLSearchParams(raw);
+                const k = params.get('sbk'), c = params.get('sbc');
+                if (!k || !c) return false;
+                sbOrigSet.call(localStorage, 'sb_key', k);
+                sbOrigSet.call(localStorage, 'sb_code', c);
+                try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+                sbStatus('تم استيراد إعدادات المزامنة — جارٍ السحب...');
+                return true;
+            } catch (e) { return false; }
+        }
+
+        // إنشاء رابط النقل ومحاولة نسخه للحافظة
+        function sbCopyTransferLink() {
+            const c = sbCfg();
+            if (!c.key || !c.code) { sbStatus('⚠️ فعّل المزامنة أولاً', '#e74c3c'); return; }
+            const base = location.href.split('#')[0]; // يدعم http/https وfile أيضاً
+            const link = base + '#sbk=' + encodeURIComponent(c.key) + '&sbc=' + encodeURIComponent(c.code);
+            const row = document.getElementById('sbLinkRow');
+            const out = document.getElementById('sbLinkOut');
+            if (row) row.style.display = '';
+            if (out) { out.value = link; out.focus(); out.select(); }
+            let done = false;
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(link); done = true; }
+            } catch (e) {}
+            if (!done && out) { try { done = document.execCommand('copy'); } catch (e) {} }
+            sbStatus(done ? '✅ نُسخ رابط النقل — افتحه في المتصفح الآخر' : 'انسخ الرابط من الصندوق وافتحه في المتصفح الآخر', done ? '#2ecc71' : undefined);
+        }
+
+        // قراءة حالة السحابة لرمز معيّن دون أي كتابة (فحص آمن قبل اعتماد الرمز)
+        async function sbGetState(code) {
+            const key = sbCfg().key;
+            const headers = { 'apikey': key, 'Content-Type': 'application/json' };
+            if (key && key.startsWith('eyJ')) headers['Authorization'] = 'Bearer ' + key;
+            const r = await fetch(SB_URL + '/rest/v1/rpc/get_state', {
+                method: 'POST', headers: headers, body: JSON.stringify({ p_code: code })
+            });
+            if (!r.ok) throw new Error(r.status + ' ' + (await r.text()).slice(0, 140));
+            const rows = await r.json();
+            return sbNormalizeRemote(rows && rows.length ? rows[0].data : null);
+        }
+
+        // البحث عن حساب باسم مستخدم في السحابة واعتماد رمز المزامنة الذي يحتويه
+        async function sbPullForUser(user) {
+            const userLower = String(user || '').trim().toLowerCase();
+            if (!userLower || !sbCfg().key) return false;
+            const original = sbCfg().code;
+            const candidates = [];
+            if (original) candidates.push(original);
+            const derived = sbCodeFromUser(userLower);
+            if (candidates.indexOf(derived) === -1) candidates.push(derived);
+            for (let i = 0; i < candidates.length; i++) {
+                const code = candidates[i];
+                let remote = null;
+                try { remote = await sbGetState(code); } catch (e) { continue; }
+                const accounts = (remote && remote.smm && remote.smm.accounts) || [];
+                const found = accounts.some(function (a) { return a && String(a.user).toLowerCase() === userLower; });
+                if (!found) continue;
+                sbOrigSet.call(localStorage, 'sb_code', code);
+                const codeEl = document.getElementById('sbCode');
+                if (codeEl) codeEl.value = code;
+                // اعتماد حالة السحابة قسرياً (قد تكون نسخة محلية أحدث أنشأها المتصفح الخفي)
+                if (remote && remote.smm) smmApplyRemote(remote.smm, remote.smmAt || 0, true);
+                try { await sbSync(); } catch (e) {}
+                return true;
+            }
+            return false;
+        }
 
         async function sbRpc(fn, body) {
             const c = sbCfg();
@@ -2058,6 +4424,10 @@
                     sbAgain = false;
                     const rows = await sbRpc('get_state', { p_code: sbCfg().code });
                     const remote = sbNormalizeRemote(rows.length ? rows[0].data : null);
+                    // لوحة الخدمات: اسحب الحالة الأحدث من السحابة قبل الدفع
+                    if (remote && remote.smm && typeof smmApplyRemote === 'function') {
+                        smmApplyRemote(remote.smm, remote.smmAt || 0);
+                    }
                     const m = sbMerge(remote);
 
                     const newStr = JSON.stringify(m.list.map(x => x.b));
@@ -2086,7 +4456,9 @@
                         bookmarks: m.list.map(x => Object.assign({}, x.b, { _at: x.at })),
                         tombs: m.tombs,
                         settings: m.settings,
-                        settingsAt: m.settingsAt
+                        settingsAt: m.settingsAt,
+                        smm: (typeof smmState !== 'undefined' && smmState) ? smmState : null,
+                        smmAt: (typeof smmState !== 'undefined' && smmState) ? (smmState.updatedAt || 0) : 0
                     });
                     if (payload !== sbLastPayload || !remote) {
                         await sbRpc('set_state', { p_code: sbCfg().code, p_data: JSON.parse(payload) });
@@ -2107,13 +4479,17 @@
         document.addEventListener('DOMContentLoaded', function() {
             const keyEl = document.getElementById('sbKey');
             const codeEl = document.getElementById('sbCode');
+            sbApplyUrlConfig(); // استيراد إعدادات المزامنة من «رابط النقل» إن وُجد
             keyEl.value = localStorage.getItem('sb_key') || '';
             codeEl.value = localStorage.getItem('sb_code') || '';
             document.getElementById('sbSave').addEventListener('click', function() {
-                const key = keyEl.value.trim(), code = codeEl.value.trim();
+                const key = keyEl.value.trim();
+                let code = codeEl.value.trim();
+                if (key && !code) code = sbCodeFromUser(smmAccount ? smmAccount.user : '');
                 if (!key || code.length < 8) { sbStatus('⚠️ أدخل المفتاح ورمزاً من 8 أحرف على الأقل', '#e74c3c'); return; }
                 localStorage.setItem('sb_key', key);
                 localStorage.setItem('sb_code', code);
+                codeEl.value = code;
                 sbStatus('جارٍ المزامنة...');
                 sbSyncNow();
             });
@@ -2125,8 +4501,12 @@
                 localStorage.removeItem('sb_key');
                 localStorage.removeItem('sb_code');
                 keyEl.value = ''; codeEl.value = '';
+                const row = document.getElementById('sbLinkRow');
+                if (row) row.style.display = 'none';
                 sbStatus('غير مفعّلة');
             });
+            const linkBtn = document.getElementById('sbLink');
+            if (linkBtn) linkBtn.addEventListener('click', sbCopyTransferLink);
             if (sbReady()) { sbStatus('جارٍ المزامنة...'); setTimeout(sbSyncNow, 1200); }
             setInterval(sbSyncNow, 45000);
         });
@@ -2142,18 +4522,8 @@
         });
 
         function openExternalWindow(url) {
-            // Close existing playback window if it exists
-            if (playbackWindow && !playbackWindow.closed) {
-                playbackWindow.close();
-            }
-            
-            // Open new window
-            playbackWindow = window.open(url, 'singlePlaybackWindow', 
-                'width=1024,height=768,menubar=no,toolbar=no,location=yes,status=no');
-            
-            if (playbackWindow) {
-                playbackWindow.focus();
-            }
+            // Kept for backward compatibility: closes the previous window and opens a new one
+            return loadInExternal(url);
         }
     </script>
 </body>
